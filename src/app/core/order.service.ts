@@ -2,6 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { AuthService } from './auth.service';
 import { CartService } from './cart.service';
 import { CatalogService } from './catalog.service';
+import { CouponService } from './coupon.service';
 import { Order, OrderStatus, PaymentMethod, ShippingInfo } from './models';
 import { ProductService } from './product.service';
 import { SEED_ORDERS } from './seed';
@@ -13,6 +14,7 @@ export class OrderService {
   private readonly cart = inject(CartService);
   private readonly products = inject(ProductService);
   private readonly catalog = inject(CatalogService);
+  private readonly coupons = inject(CouponService);
   private readonly _orders = signal<Order[]>(load('orders', SEED_ORDERS));
 
   readonly orders = computed(() =>
@@ -51,6 +53,8 @@ export class OrderService {
       email: user.email,
       items,
       subtotal: this.cart.subtotal(),
+      discount: this.cart.discount(),
+      couponCode: this.cart.coupon()?.code,
       shipping: this.cart.shipping(),
       total: this.cart.total(),
       status: 'Pending',
@@ -60,6 +64,7 @@ export class OrderService {
     };
 
     items.forEach((i) => this.products.adjustStock(i.productId, -i.qty));
+    if (order.couponCode) this.coupons.recordUse(order.couponCode);
     this._orders.update((list) => [order, ...list]);
     this.cart.clear();
     return order;

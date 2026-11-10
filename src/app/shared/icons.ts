@@ -3,9 +3,9 @@ import {
   faChartLine, faCheck, faCircleCheck, faCreditCard, faEye, faFilter, faGauge, faGem, faHeart as faHeartSolid,
   faLeaf, faLock, faMagnifyingGlass, faMinus, faMoneyBillWave, faPen, faPlus, faReceipt, faRightFromBracket,
   faRightToBracket, faRotateLeft, faShieldHalved, faSprayCanSparkles, faStar, faStore, faTrash, faTriangleExclamation,
-  faTruckFast, faUser, faUserPlus, faUsers, faXmark, faFire, faWandMagicSparkles, faDroplet, faGlobe, faImage, faCloudArrowUp, faChevronLeft, faChevronRight, faLink, faSpinner, faMoon, faSun, faCoins, faTags, faLayerGroup, faGear, faCrown,
+  faTruckFast, faUser, faUserPlus, faUsers, faXmark, faFire, faWandMagicSparkles, faDroplet, faGlobe, faImage, faCloudArrowUp, faChevronLeft, faChevronRight, faLink, faSpinner, faMoon, faSun, faCoins, faTags, faLayerGroup, faGear, faCrown, faSeedling, faSnowflake, faClock, faTicket, faDownload, faIdCard, faComment, faCircleHalfStroke, faStarHalfStroke, faUserPen, faKey, faLocationDot,
 } from '@fortawesome/free-solid-svg-icons';
-import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
+import { faHeart as faHeartRegular, faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
 import { faFacebookF, faInstagram, faPinterestP, faTiktok } from '@fortawesome/free-brands-svg-icons';
 
 /** Central icon registry — use as `protected readonly i = Icons;` then `<fa-icon [icon]="i.cart" />` */
@@ -67,6 +67,19 @@ export const Icons = {
   layers: faLayerGroup,
   gear: faGear,
   crown: faCrown,
+  seedling: faSeedling,
+  snowflake: faSnowflake,
+  clock: faClock,
+  ticket: faTicket,
+  download: faDownload,
+  idCard: faIdCard,
+  comment: faComment,
+  halfCircle: faCircleHalfStroke,
+  starHalf: faStarHalfStroke,
+  starOutline: faStarRegular,
+  userPen: faUserPen,
+  key: faKey,
+  location: faLocationDot, faSeedling, faSnowflake, faClock, faTicket, faDownload, faIdCard, faComment, faCircleHalfStroke, faStarHalfStroke, faUserPen, faKey, faLocationDot,
   facebook: faFacebookF,
   instagram: faInstagram,
   pinterest: faPinterestP,

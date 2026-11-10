@@ -1,0 +1,108 @@
+:host {
+  display: block;
+}
+
+.compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 9999px;
+  background: var(--color-surface-2);
+  padding: 0.15rem 0.55rem;
+  font-size: 0.7rem;
+  color: var(--color-muted);
+}
+
+.pill fa-icon {
+  color: var(--color-brand-ink);
+}
+
+.pill--icons {
+  gap: 0.45rem;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  border-radius: 1.25rem;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  padding: 1rem 1.1rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .row {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.label fa-icon {
+  color: var(--color-brand-ink);
+}
+
+.value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.meter {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.meter__seg {
+  width: 1.6rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: var(--color-surface-3);
+}
+
+.meter__seg--on {
+  background: linear-gradient(90deg, var(--color-brand-300), var(--color-brand-500));
+}
+
+.season {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-line);
+  padding: 0.2rem 0.65rem;
+  font-size: 0.8rem;
+  color: var(--color-faint);
+  opacity: 0.7;
+}
+
+.season--on {
+  border-color: var(--color-brand-300);
+  background: var(--color-brand-soft);
+  color: var(--color-brand-ink);
+  opacity: 1;
+}

@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { User } from './models';
+import { ShippingInfo, User } from './models';
 import { SEED_USERS } from './seed';
 import { load, persist } from './storage';
 
@@ -41,6 +41,24 @@ export class AuthService {
     this._users.update((list) => [...list, user]);
     this._currentId.set(id);
     return { ok: true };
+  }
+
+  updateProfile(changes: { name: string; phone?: string }): void {
+    const id = this._currentId();
+    this._users.update((list) => list.map((u) => (u.id === id ? { ...u, name: changes.name.trim(), phone: changes.phone?.trim() } : u)));
+  }
+
+  saveAddress(address: ShippingInfo): void {
+    const id = this._currentId();
+    this._users.update((list) => list.map((u) => (u.id === id ? { ...u, address } : u)));
+  }
+
+  /** Returns false when the current password is wrong. */
+  changePassword(current: string, next: string): boolean {
+    const user = this._users().find((u) => u.id === this._currentId());
+    if (!user || user.password !== current) return false;
+    this._users.update((list) => list.map((u) => (u.id === user.id ? { ...u, password: next } : u)));
+    return true;
   }
 
   logout(): void {

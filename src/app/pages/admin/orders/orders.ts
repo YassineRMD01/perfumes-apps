@@ -12,6 +12,7 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { downloadCsv } from '../../../core/csv';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { I18N_PIPES } from '../../../core/i18n/pipes';
 import { Order, ORDER_STATUSES, OrderStatus, severityOf, STATUS_SEVERITY } from '../../../core/models';
@@ -60,6 +61,20 @@ export class AdminOrders {
 
   protected photo(productId: number): string | undefined {
     return this.products.getById(productId)?.images[0];
+  }
+
+  /** Exports the orders currently shown (search and status filter applied). Amounts in USD. */
+  exportCsv(): void {
+    downloadCsv(
+      `orders-${new Date().toISOString().slice(0, 10)}.csv`,
+      ['Order', 'Date', 'Customer', 'Email', 'Status', 'Payment', 'Items', 'Subtotal (USD)', 'Discount (USD)', 'Coupon', 'Shipping (USD)',
+       'Total (USD)', 'Address', 'City', 'Country'],
+      this.filtered().map((o) => [
+        o.id, o.createdAt.slice(0, 16).replace('T', ' '), o.customerName, o.email, o.status, o.payment,
+        o.items.map((i) => `${i.qty}× ${i.name}`).join(' | '), o.subtotal, o.discount ?? 0, o.couponCode ?? '', o.shipping, o.total,
+        o.shippingInfo.address, o.shippingInfo.city, o.shippingInfo.country,
+      ]),
+    );
   }
 
   itemCount(o: Order): number {

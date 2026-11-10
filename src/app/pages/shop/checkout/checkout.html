@@ -21,7 +21,10 @@
               </div>
             }
           </div>
-        </section>
+          <label class="mt-5 flex cursor-pointer items-center gap-2 text-sm text-muted">
+          <p-checkbox [binary]="true" [formControl]="saveAddress" /> {{ 'co.saveAddress' | t }}
+        </label>
+      </section>
 
         <section class="card p-6">
           <h2 class="mb-5 flex items-center gap-2 text-xl font-semibold"><fa-icon [icon]="i.card" class="text-brand-ink" /> {{ 'co.payment' | t }}</h2>
@@ -69,6 +72,9 @@
         </ul>
         <dl class="space-y-2 border-t border-line pt-4 text-sm">
           <div class="flex justify-between"><dt class="text-muted">{{ 'common.subtotal' | t }}</dt><dd>{{ cart.subtotal() | money }}</dd></div>
+          @if (cart.discount()) {
+            <div class="flex justify-between text-emerald-700"><dt>{{ 'cart.discount' | t: { code: cart.coupon()!.code } }}</dt><dd>−{{ cart.discount() | money }}</dd></div>
+          }
           <div class="flex justify-between"><dt class="text-muted">{{ 'common.shipping' | t }}</dt><dd>{{ cart.shipping() ? (cart.shipping() | money) : ('common.free' | t) }}</dd></div>
           <div class="flex justify-between pt-2 text-lg font-bold"><dt>{{ 'common.total' | t }}</dt><dd>{{ cart.total() | money }}</dd></div>
         </dl>

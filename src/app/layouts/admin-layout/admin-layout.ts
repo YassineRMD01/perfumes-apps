@@ -35,11 +35,13 @@ export class AdminLayout {
     { label: 'admin.products', path: '/admin/products', icon: Icons.boxes, exact: false },
     { label: 'admin.orders', path: '/admin/orders', icon: Icons.receipt, exact: false },
     { label: 'admin.customers', path: '/admin/customers', icon: Icons.users, exact: false },
+    { label: 'admin.reviews', path: '/admin/reviews', icon: Icons.comment, exact: false },
   ];
 
   protected readonly catalogLinks: { label: TranslationKey; path: string; icon: typeof Icons.gauge; exact: boolean }[] = [
     { label: 'admin.brands', path: '/admin/brands', icon: Icons.tags, exact: false },
     { label: 'admin.categories', path: '/admin/categories', icon: Icons.layers, exact: false },
+    { label: 'admin.coupons', path: '/admin/coupons', icon: Icons.ticket, exact: false },
     { label: 'admin.settings', path: '/admin/settings', icon: Icons.gear, exact: false },
   ];
 

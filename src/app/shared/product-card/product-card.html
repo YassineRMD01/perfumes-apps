@@ -32,8 +32,9 @@
       <span aria-hidden="true">·</span>
       <span>{{ p.volumeMl }} ml</span>
       <span aria-hidden="true">·</span>
-      <span class="inline-flex items-center gap-1"><fa-icon [icon]="i.star" class="text-brand-500" />{{ p.rating.toFixed(1) }}</span>
+      <span class="inline-flex items-center gap-1"><fa-icon [icon]="i.star" class="text-brand-500" />{{ rating().average.toFixed(1) }}</span>
     </div>
+    <app-wear-guide class="mt-2" [perfume]="p" [compact]="true" />
     <div class="footer">
       <div>
         <span class="price">{{ p.price | money }}</span>

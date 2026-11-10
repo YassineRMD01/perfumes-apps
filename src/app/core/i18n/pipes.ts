@@ -19,7 +19,10 @@ export class TranslatePipe implements PipeTransform {
 @Pipe({ name: 'tv', pure: false })
 export class TranslateValuePipe implements PipeTransform {
   private readonly i18n = inject(I18nService);
-  transform(value: string, prefix: 'gender' | 'conc' | 'status' | 'payment' | 'seg' | 'cur' | 'accent' | 'sort'): string {
+  transform(
+    value: string,
+    prefix: 'gender' | 'conc' | 'status' | 'payment' | 'seg' | 'cur' | 'accent' | 'sort' | 'longevity' | 'longevityShort' | 'season' | 'time',
+  ): string {
     return this.i18n.tv(prefix, value);
   }
 }

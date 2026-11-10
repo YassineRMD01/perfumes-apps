@@ -1,3 +1,46 @@
 :host {
   display: block;
 }
+
+.dist-bar {
+  position: relative;
+  height: 0.4rem;
+  flex: 1;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--color-surface-3);
+}
+
+.dist-bar > span {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: 9999px;
+  background: var(--color-brand-400);
+}
+
+.rate-input {
+  display: flex;
+  gap: 0.25rem;
+  font-size: 1.5rem;
+  color: var(--color-brand-500);
+}
+
+.rate-input button {
+  transition: transform 0.15s;
+}
+
+.rate-input button:hover {
+  transform: scale(1.15);
+}
+
+.avatar {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 9999px;
+  background: var(--color-brand-soft);
+  font-weight: 600;
+  color: var(--color-brand-ink);
+}

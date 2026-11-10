@@ -10,14 +10,16 @@ import { I18nService } from '../../core/i18n/i18n.service';
 import { I18N_PIPES } from '../../core/i18n/pipes';
 import { ImageStore } from '../../core/image-store.service';
 import { Perfume } from '../../core/models';
+import { ReviewService } from '../../core/review.service';
 import { WishlistService } from '../../core/wishlist.service';
 import { Bottle } from '../bottle/bottle';
 import { Icons } from '../icons';
+import { WearGuide } from '../wear-guide/wear-guide';
 
 @Component({
   selector: 'app-product-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, FaIconComponent, ButtonModule, TagModule, Bottle, ...I18N_PIPES],
+  imports: [RouterLink, FaIconComponent, ButtonModule, TagModule, Bottle, WearGuide, ...I18N_PIPES],
   templateUrl: './product-card.html',
   styleUrl: './product-card.css',
 })
@@ -30,10 +32,12 @@ export class ProductCard {
   private readonly images = inject(ImageStore);
   private readonly catalog = inject(CatalogService);
   private readonly i18n = inject(I18nService);
+  private readonly reviews = inject(ReviewService);
   protected readonly i = Icons;
 
   protected readonly cover = computed(() => this.images.resolve(this.product().images[0]));
   protected readonly hoverImage = computed(() => this.images.resolve(this.product().images[1]));
+  protected readonly rating = computed(() => this.reviews.stats(this.product()));
   protected readonly wished = computed(() => this.wishlist.ids().includes(this.product().id));
   protected readonly discount = computed(() => {
     const { price, oldPrice } = this.product();

@@ -1,3 +1,12 @@
 :host {
   display: block;
 }
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  border-radius: 1rem;
+  background: var(--color-surface-2);
+  padding: 0.85rem 1rem;
+}

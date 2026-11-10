@@ -28,6 +28,18 @@ shows a license banner unless a key is configured. PrimeNG 21 officially declare
 `package.json` has an npm `overrides` block that lets it run on Angular 22. The build and the main user flows were
 tested on that combination. Remove the `overrides` block if you downgrade to Angular 21.
 
+## Perfume wear guide
+
+Every perfume has:
+
+- **Longevity**: Light (2–4 h), Moderate (4–6 h), Long-lasting (6–8 h) or Very long-lasting (8–12 h)
+- **Seasons**: any of spring, summer, autumn and winter
+- **Day or night**: day, night, or both
+
+They appear as compact chips on product cards, as a "How to wear it" panel (longevity meter, season and day/night badges)
+on the product page, as shop filters (season, day/night, minimum longevity, sort by longest lasting), and as fields in
+the admin product form, products table and CSV export.
+
 ## Brand & design
 
 **Lumora** (from *lumière*, light) is a fictional "maison de parfum". Its logo is an arch-shaped perfume bottle with a
@@ -98,13 +110,21 @@ To use a real backend, replace `ImageStore.add()` with an upload request that re
 - **Cart**: quantity editing, progress bar toward free shipping, order summary
 - **Checkout** (sign-in required): reactive form with validation, card or cash-on-delivery payment
 - **My orders**: order history with details; pending orders can be cancelled
+- **My account**: edit name and phone, saved shipping address (pre-fills checkout), change password, see your reviews
+- **Reviews**: customers who ordered a perfume can rate and review it (one review each, editable); product pages show
+  the average, a star breakdown and the reviews
+- **Discount codes** in the cart: percentage or fixed amount, optional minimum subtotal and expiry date, with clear
+  messages when a code can't be used
 - **Wishlist**, **Sign in / Register**, 404 page
 
 ### Admin back office (`/admin`, admin role only)
 - **Dashboard**: revenue, orders, average order value and customer KPIs, 6-month revenue chart, orders by status, recent orders, top sellers, low stock alerts
-- **Products**: sortable, searchable, paginated table; create/edit dialog with photo manager (up to 5 photos) and live preview; delete with confirmation
-- **Orders**: filter by status and search; inline status changes (cancelling restocks the items); order detail dialog
-- **Customers**: order count, total spent, segment (New, Returning, VIP)
+- **Products**: sortable, searchable, paginated table with wear guide, CSV export; create/edit dialog with photo manager (up to 5 photos) and live preview; delete with confirmation
+- **Orders**: filter by status and search, CSV export; inline status changes (cancelling restocks the items); order detail dialog
+- **Customers**: order count, total spent, segment (New, Returning, VIP), and a detail view with contact info, saved
+  address and order history
+- **Reviews**: average rating, search, filter by stars, delete inappropriate reviews
+- **Discount codes**: create, edit, enable/disable, delete; see how many times each code was used
 - **Brands** and **Categories**: create, edit, delete
 - **Settings**: store name, logo, accent color, currencies and exchange rates, free shipping
 - **Reset demo data**

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CheckboxModule } from 'primeng/checkbox';
 import { Router, RouterLink } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { MessageService } from 'primeng/api';
@@ -20,7 +21,7 @@ import { Icons } from '../../../shared/icons';
 @Component({
   selector: 'app-checkout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, FaIconComponent, ButtonModule, InputMaskModule, InputTextModule, SelectButtonModule, Bottle, ...I18N_PIPES],
+  imports: [ReactiveFormsModule, CheckboxModule, RouterLink, FaIconComponent, ButtonModule, InputMaskModule, InputTextModule, SelectButtonModule, Bottle, ...I18N_PIPES],
   templateUrl: './checkout.html',
   styleUrl: './checkout.css',
 })
@@ -34,6 +35,7 @@ export class Checkout implements OnInit {
   private readonly fb = inject(FormBuilder).nonNullable;
   protected readonly i = Icons;
   protected readonly submitted = signal(false);
+  protected readonly saveAddress = new FormControl(true, { nonNullable: true });
   protected readonly placing = signal(false);
 
   protected readonly shippingFields = [
@@ -68,7 +70,10 @@ export class Checkout implements OnInit {
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
-    if (user) this.form.controls.shipping.patchValue({ fullName: user.name, phone: user.phone ?? '' });
+    if (user) {
+      this.form.controls.shipping.patchValue(user.address ?? { fullName: user.name, phone: user.phone ?? '' });
+      this.saveAddress.setValue(!user.address);
+    }
     this.form.controls.payment.valueChanges.subscribe((p) =>
       p === 'Card' ? this.form.controls.card.enable() : this.form.controls.card.disable(),
     );
@@ -90,6 +95,7 @@ export class Checkout implements OnInit {
     // Simulate a payment round-trip
     setTimeout(() => {
       const v = this.form.getRawValue();
+      if (this.saveAddress.value) this.auth.saveAddress(v.shipping);
       const order = this.orders.place(v.shipping, v.payment);
       this.placing.set(false);
       this.toast.add({

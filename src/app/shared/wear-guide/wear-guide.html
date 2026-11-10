@@ -1,0 +1,43 @@
+@let p = perfume();
+@if (compact()) {
+  <div class="compact">
+    <span class="pill" [title]="p.longevity | tv: 'longevity'"><fa-icon [icon]="i.clock" /> {{ p.longevity | tv: 'longevityShort' }}</span>
+    <span class="pill" [title]="p.timeOfDay | tv: 'time'"><fa-icon [icon]="timeIcons[p.timeOfDay]" /> {{ p.timeOfDay | tv: 'time' }}</span>
+    <span class="pill pill--icons">
+      @for (s of p.seasons; track s) {
+        <fa-icon [icon]="seasonIcons[s]" [title]="s | tv: 'season'" />
+      }
+    </span>
+  </div>
+} @else {
+  <div class="panel">
+    <div class="row">
+      <div class="label"><fa-icon [icon]="i.clock" /> {{ 'wear.longevity' | t }}</div>
+      <div class="value">
+        <div class="meter" role="meter" [attr.aria-valuenow]="level()" aria-valuemin="1" aria-valuemax="4" [attr.aria-label]="p.longevity | tv: 'longevity'">
+          @for (l of levels; track l; let n = $index) {
+            <span class="meter__seg" [class.meter__seg--on]="n < level()"></span>
+          }
+        </div>
+        <span class="text-sm">{{ p.longevity | tv: 'longevity' }}</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label"><fa-icon [icon]="i.leaf" /> {{ 'wear.seasons' | t }}</div>
+      <div class="value flex-wrap">
+        @for (s of seasons; track s) {
+          <span class="season" [class.season--on]="p.seasons.includes(s)">
+            <fa-icon [icon]="seasonIcons[s]" /> {{ s | tv: 'season' }}
+          </span>
+        }
+      </div>
+    </div>
+    <div class="row">
+      <div class="label"><fa-icon [icon]="i.halfCircle" /> {{ 'wear.time' | t }}</div>
+      <div class="value">
+        <span class="season" [class.season--on]="p.timeOfDay !== 'Night'"><fa-icon [icon]="i.sun" /> {{ 'Day' | tv: 'time' }}</span>
+        <span class="season" [class.season--on]="p.timeOfDay !== 'Day'"><fa-icon [icon]="i.moon" /> {{ 'Night' | tv: 'time' }}</span>
+      </div>
+    </div>
+  </div>
+}

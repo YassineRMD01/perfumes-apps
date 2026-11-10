@@ -41,15 +41,35 @@
       </div>
 
       <aside class="card h-fit p-6 lg:sticky lg:top-24">
-        <h2 class="mb-4 text-xl font-semibold">{{ 'cart.summary' | t }}</h2>
+        <h2 class="mb-4 text-3xl">{{ 'cart.summary' | t }}</h2>
         @if (remaining() > 0) {
           <p class="mb-2 text-sm text-muted">{{ 'cart.addMore' | t: { amount: (remaining() | money) } }}</p>
         } @else {
           <p class="mb-2 text-sm font-medium text-emerald-700"><fa-icon [icon]="i.truck" /> {{ 'cart.freeUnlocked' | t }}</p>
         }
         <p-progressbar [value]="progress()" [showValue]="false" styleClass="!h-1.5 mb-6" />
+        <!-- Discount code -->
+        <div class="mb-5">
+          <label class="field-label" for="coupon">{{ 'cart.coupon' | t }}</label>
+          @if (cart.coupon(); as c) {
+            <div class="coupon-applied">
+              <fa-icon [icon]="i.ticket" />
+              <span class="flex-1 font-medium" dir="ltr">{{ c.code }}</span>
+              <button type="button" class="text-xs underline" (click)="removeCoupon()">{{ 'cart.removeCoupon' | t }}</button>
+            </div>
+          } @else {
+            <form class="flex gap-2" (ngSubmit)="applyCoupon()">
+              <input pInputText id="coupon" name="coupon" [(ngModel)]="code" [placeholder]="'cart.couponPlaceholder' | t" class="min-w-0 flex-1 uppercase" dir="ltr" />
+              <p-button type="submit" severity="secondary" [outlined]="true" [disabled]="!code.trim()">{{ 'cart.apply' | t }}</p-button>
+            </form>
+          }
+          @if (couponError()) { <p class="field-error">{{ couponError() }}</p> }
+        </div>
         <dl class="space-y-2 text-sm">
           <div class="flex justify-between"><dt class="text-muted">{{ 'cart.subtotalItems' | t: { n: cart.count() } }}</dt><dd>{{ cart.subtotal() | money }}</dd></div>
+          @if (cart.discount()) {
+            <div class="flex justify-between text-emerald-700"><dt>{{ 'cart.discount' | t: { code: cart.coupon()!.code } }}</dt><dd>−{{ cart.discount() | money }}</dd></div>
+          }
           <div class="flex justify-between"><dt class="text-muted">{{ 'common.shipping' | t }}</dt><dd>{{ cart.shipping() ? (cart.shipping() | money) : ('common.free' | t) }}</dd></div>
           <div class="flex justify-between border-t border-line pt-3 text-lg font-bold"><dt>{{ 'common.total' | t }}</dt><dd>{{ cart.total() | money }}</dd></div>
         </dl>

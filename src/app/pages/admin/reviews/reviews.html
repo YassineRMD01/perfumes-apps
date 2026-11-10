@@ -1,0 +1,70 @@
+<div class="mb-6">
+  <h2 class="text-4xl">{{ 'arv.title' | t }}</h2>
+  <p class="text-sm text-muted">{{ 'arv.subtitle' | t }}</p>
+</div>
+
+<div class="mb-6 grid gap-4 sm:grid-cols-3">
+  <div class="card flex items-center gap-4 p-5">
+    <span class="kpi-icon"><fa-icon [icon]="i.star" /></span>
+    <div>
+      <div class="text-sm text-muted">{{ 'arv.average' | t }}</div>
+      <div class="flex items-center gap-2"><span class="text-2xl font-semibold">{{ summary().average.toFixed(1) }}</span><app-star-rating [value]="summary().average" /></div>
+    </div>
+  </div>
+  <div class="card flex items-center gap-4 p-5">
+    <span class="kpi-icon"><fa-icon [icon]="i.comment" /></span>
+    <div><div class="text-sm text-muted">{{ 'arv.total' | t }}</div><div class="text-2xl font-semibold">{{ summary().total }}</div></div>
+  </div>
+  <button type="button" class="card flex items-center gap-4 p-5 text-start transition hover:border-brand-300" (click)="rating.set(3)">
+    <span class="kpi-icon"><fa-icon [icon]="i.warning" /></span>
+    <div><div class="text-sm text-muted">{{ 'arv.low' | t }}</div><div class="text-2xl font-semibold">{{ summary().low }}</div></div>
+  </button>
+</div>
+
+<div class="card overflow-hidden">
+  <p-table [value]="rows()" dataKey="id" [paginator]="true" [rows]="10" [tableStyle]="{ 'min-width': '56rem' }" [rowHover]="true"
+           sortField="createdAt" [sortOrder]="-1">
+    <ng-template #caption>
+      <div class="flex flex-wrap items-center gap-3">
+        <p-iconfield>
+          <p-inputicon><fa-icon [icon]="i.search" class="text-faint" /></p-inputicon>
+          <input pInputText [placeholder]="'arv.search' | t" [(ngModel)]="search" />
+        </p-iconfield>
+        <div class="flex flex-wrap gap-1.5">
+          @for (n of ratingFilters; track n) {
+            <button type="button" class="chip" [class.selected]="rating() === n" (click)="rating.set(n)">
+              @if (n) { {{ n }} <fa-icon [icon]="i.star" class="text-brand-500" /> } @else { {{ 'shop.all' | t }} }
+            </button>
+          }
+        </div>
+      </div>
+    </ng-template>
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="productName">{{ 'arv.perfume' | t }} <p-sortIcon field="productName" /></th>
+        <th pSortableColumn="userName">{{ 'dash.customer' | t }} <p-sortIcon field="userName" /></th>
+        <th pSortableColumn="rating">{{ 'arv.rating' | t }} <p-sortIcon field="rating" /></th>
+        <th>{{ 'arv.comment' | t }}</th>
+        <th pSortableColumn="createdAt">{{ 'dash.date' | t }} <p-sortIcon field="createdAt" /></th>
+        <th class="w-16"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-r>
+      <tr>
+        <td><a [routerLink]="['/product', r.productId]" class="font-medium hover:text-brand-ink">{{ r.productName }}</a></td>
+        <td>{{ r.userName }}</td>
+        <td><app-star-rating [value]="r.rating" /></td>
+        <td class="max-w-md text-sm text-muted">{{ r.comment }}</td>
+        <td class="whitespace-nowrap">{{ r.createdAt | ldate }}</td>
+        <td>
+          <p-button [text]="true" [rounded]="true" severity="danger" [pTooltip]="'common.delete' | t" [ariaLabel]="'common.delete' | t" (onClick)="remove(r)">
+            <fa-icon [icon]="i.trash" />
+          </p-button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr><td colspan="6" class="py-10 text-center text-muted">{{ 'arv.empty' | t }}</td></tr>
+    </ng-template>
+  </p-table>
+</div>

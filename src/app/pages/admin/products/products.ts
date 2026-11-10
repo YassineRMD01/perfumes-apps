@@ -9,6 +9,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
+import { SelectButtonModule } from 'primeng/selectbutton';
 import { Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
@@ -18,11 +19,16 @@ import { I18nService } from '../../../core/i18n/i18n.service';
 import { I18N_PIPES } from '../../../core/i18n/pipes';
 import { ImageStore } from '../../../core/image-store.service';
 import { CatalogService } from '../../../core/catalog.service';
-import { CONCENTRATIONS, Concentration, GENDERS, Gender, MAX_PHOTOS, Perfume, PerfumeInput } from '../../../core/models';
+import { downloadCsv } from '../../../core/csv';
+import {
+  CONCENTRATIONS, Concentration, GENDERS, Gender, LONGEVITIES, Longevity, MAX_PHOTOS, Perfume, PerfumeInput, SEASONS, Season, TIMES_OF_DAY, TimeOfDay,
+} from '../../../core/models';
 import { ProductService } from '../../../core/product.service';
 import { Bottle } from '../../../shared/bottle/bottle';
 import { Icons } from '../../../shared/icons';
 import { PhotoManager } from '../../../shared/photo-manager/photo-manager';
+import { WearGuide } from '../../../shared/wear-guide/wear-guide';
+import { SEASON_ICONS } from '../../../shared/wear-icons';
 
 const splitNotes = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean);
 
@@ -31,7 +37,7 @@ const splitNotes = (s: string) => s.split(',').map((x) => x.trim()).filter(Boole
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule, ReactiveFormsModule, FaIconComponent, ButtonModule, DialogModule, IconFieldModule, InputIconModule, InputNumberModule,
-    InputTextModule, SelectModule, TableModule, TagModule, TextareaModule, ToggleSwitchModule, TooltipModule, Bottle, PhotoManager, ...I18N_PIPES,
+    InputTextModule, SelectModule, TableModule, TagModule, TextareaModule, ToggleSwitchModule, TooltipModule, Bottle, PhotoManager, WearGuide, SelectButtonModule, ...I18N_PIPES,
   ],
   templateUrl: './products.html',
   styleUrl: './products.css',
@@ -66,6 +72,10 @@ export class AdminProducts {
   protected readonly categoryOptions = computed(() =>
     this.catalog.categories().map((c) => ({ value: c.id, label: c.name[this.i18n.lang()] || c.name.en })),
   );
+  protected readonly seasonList = SEASONS;
+  protected readonly seasonIcons = SEASON_ICONS;
+  protected readonly longevityOptions = computed(() => LONGEVITIES.map((v) => ({ value: v, label: this.i18n.tv('longevity', v) })));
+  protected readonly timeOptions = computed(() => TIMES_OF_DAY.map((v) => ({ value: v, label: this.i18n.tv('time', v) })));
   protected readonly concentrationOptions = computed(() => CONCENTRATIONS.map((v) => ({ value: v, label: this.i18n.tv('conc', v) })));
 
   protected readonly form = this.fb.group({
@@ -79,12 +89,35 @@ export class AdminProducts {
     gender: this.fb.control<Gender>('Unisex'),
     categoryId: this.fb.control<string | null>(null, Validators.required),
     concentration: this.fb.control<Concentration>('EDP'),
+    longevity: this.fb.control<Longevity>('Moderate'),
+    seasons: this.fb.control<Season[]>(['Spring', 'Summer', 'Autumn', 'Winter'], (c) => (c.value?.length ? null : { required: true })),
+    timeOfDay: this.fb.control<TimeOfDay>('Both'),
     color: ['#d6b38a'],
     featured: [false],
     topNotes: [''],
     heartNotes: [''],
     baseNotes: [''],
   });
+
+  toggleSeason(season: Season): void {
+    const c = this.form.controls.seasons;
+    const current = c.value ?? [];
+    // keep seasons in calendar order
+    c.setValue(SEASONS.filter((s) => (s === season ? !current.includes(s) : current.includes(s))));
+    c.markAsTouched();
+  }
+
+  exportCsv(): void {
+    downloadCsv(
+      `products-${new Date().toISOString().slice(0, 10)}.csv`,
+      ['ID', 'Name', 'Brand', 'Category', 'Gender', 'Concentration', 'Volume (ml)', 'Price (USD)', 'Compare-at (USD)', 'Stock',
+       'Longevity', 'Seasons', 'Day/Night', 'Featured', 'Photos', 'Created'],
+      this.rows().map((p) => [
+        p.id, p.name, p.brandName, this.catalog.categoryName(p.categoryId, 'en'), p.gender, p.concentration, p.volumeMl, p.price,
+        p.oldPrice ?? '', p.stock, p.longevity, p.seasons.join(' / '), p.timeOfDay, p.featured ? 'yes' : 'no', p.images.length, p.createdAt.slice(0, 10),
+      ]),
+    );
+  }
 
   filter(dt: Table, e: Event): void {
     dt.filterGlobal((e.target as HTMLInputElement).value, 'contains');
@@ -112,6 +145,7 @@ export class AdminProducts {
     this.form.reset({
       ...p,
       oldPrice: p.oldPrice ?? null,
+      seasons: [...p.seasons],
       topNotes: p.topNotes.join(', '),
       heartNotes: p.heartNotes.join(', '),
       baseNotes: p.baseNotes.join(', '),

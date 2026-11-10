@@ -4,7 +4,15 @@ export type Translated = Record<Lang, string>;
 export type Gender = 'Women' | 'Men' | 'Unisex';
 export type Concentration = 'Parfum' | 'EDP' | 'EDT' | 'Cologne';
 
+export type Longevity = 'Light' | 'Moderate' | 'Long' | 'VeryLong';
+export type Season = 'Spring' | 'Summer' | 'Autumn' | 'Winter';
+export type TimeOfDay = 'Day' | 'Night' | 'Both';
+
 export const MAX_PHOTOS = 5;
+/** Ordered from shortest to longest; hours shown in the UI come from the translations. */
+export const LONGEVITIES: Longevity[] = ['Light', 'Moderate', 'Long', 'VeryLong'];
+export const SEASONS: Season[] = ['Spring', 'Summer', 'Autumn', 'Winter'];
+export const TIMES_OF_DAY: TimeOfDay[] = ['Day', 'Night', 'Both'];
 export const GENDERS: Gender[] = ['Women', 'Men', 'Unisex'];
 export const CONCENTRATIONS: Concentration[] = ['Parfum', 'EDP', 'EDT', 'Cologne'];
 
@@ -45,6 +53,12 @@ export interface Perfume {
   topNotes: string[];
   heartNotes: string[];
   baseNotes: string[];
+  /** How long the scent lasts on skin */
+  longevity: Longevity;
+  /** Seasons it is best worn in */
+  seasons: Season[];
+  /** Best for day, night or both */
+  timeOfDay: TimeOfDay;
   /** Bottle tint used by the generated SVG bottle when there is no photo */
   color: string;
   /** Up to MAX_PHOTOS references (URL or "idb:<id>"), the first one is the cover. */
@@ -66,6 +80,8 @@ export interface User {
   password: string;
   role: Role;
   phone?: string;
+  /** Saved shipping address, pre-filled at checkout */
+  address?: ShippingInfo;
   createdAt: string;
 }
 
@@ -105,6 +121,9 @@ export interface Order {
   email: string;
   items: OrderItem[];
   subtotal: number;
+  /** Coupon discount in USD (0 / absent when none) */
+  discount?: number;
+  couponCode?: string;
   shipping: number;
   total: number;
   status: OrderStatus;
@@ -122,6 +141,37 @@ export const STATUS_SEVERITY: Record<OrderStatus, 'warn' | 'info' | 'contrast' |
 };
 
 export const severityOf = (status: string) => STATUS_SEVERITY[status as OrderStatus] ?? 'secondary';
+
+// ---- Reviews ----
+
+export interface Review {
+  id: number;
+  productId: number;
+  userId: number;
+  userName: string;
+  /** 1–5 */
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+// ---- Coupons ----
+
+export type CouponType = 'percent' | 'fixed';
+
+export interface Coupon {
+  code: string;
+  type: CouponType;
+  /** Percentage (1–100) or USD amount */
+  value: number;
+  /** Minimum subtotal in USD */
+  minSubtotal: number;
+  active: boolean;
+  /** ISO date (inclusive), or null for no expiry */
+  expiresAt: string | null;
+  uses: number;
+  createdAt: string;
+}
 
 // ---- Store settings (managed by the admin, apply to every visitor) ----
 

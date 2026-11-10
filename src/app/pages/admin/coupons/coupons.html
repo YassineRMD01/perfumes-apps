@@ -1,0 +1,81 @@
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h2 class="text-4xl">{{ 'admin.coupons' | t }}</h2>
+    <p class="text-sm text-muted">{{ 'acp.subtitle' | t }}</p>
+  </div>
+  <p-button (onClick)="open(null)"><fa-icon [icon]="i.plus" /> {{ 'acp.new' | t }}</p-button>
+</div>
+
+<div class="card overflow-hidden">
+  <p-table [value]="coupons.coupons()" dataKey="code" [tableStyle]="{ 'min-width': '52rem' }" [rowHover]="true">
+    <ng-template #header>
+      <tr>
+        <th>{{ 'acp.code' | t }}</th>
+        <th>{{ 'acp.value' | t }}</th>
+        <th>{{ 'acp.min' | t }}</th>
+        <th>{{ 'acp.expires' | t }}</th>
+        <th pSortableColumn="uses">{{ 'acp.uses' | t }} <p-sortIcon field="uses" /></th>
+        <th>{{ 'dash.status' | t }}</th>
+        <th>{{ 'acp.active' | t }}</th>
+        <th class="w-28 text-end">{{ 'common.actions' | t }}</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-c>
+      <tr>
+        <td><span class="code" dir="ltr"><fa-icon [icon]="i.ticket" /> {{ c.code }}</span></td>
+        <td class="font-semibold" dir="ltr">{{ c.type === 'percent' ? '−' + c.value + ' %' : '−' + (c.value | money) }}</td>
+        <td>{{ c.minSubtotal ? ('acp.minLabel' | t: { amount: (c.minSubtotal | money) }) : '—' }}</td>
+        <td>{{ c.expiresAt ? (c.expiresAt | ldate) : ('acp.noExpiry' | t) }}</td>
+        <td>{{ c.uses }}</td>
+        <td>@let st = status(c); <p-tag [value]="st.label" [severity]="st.severity" /></td>
+        <td><p-toggleswitch [ngModel]="c.active" (ngModelChange)="coupons.setActive(c.code, $event)" [ariaLabel]="'acp.active' | t" /></td>
+        <td class="whitespace-nowrap text-end">
+          <p-button [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'common.edit' | t" [ariaLabel]="'common.edit' | t" (onClick)="open(c)"><fa-icon [icon]="i.edit" /></p-button>
+          <p-button [text]="true" [rounded]="true" severity="danger" [pTooltip]="'common.delete' | t" [ariaLabel]="'common.delete' | t" (onClick)="remove(c)"><fa-icon [icon]="i.trash" /></p-button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr><td colspan="8" class="py-10 text-center text-muted">{{ 'acp.empty' | t }}</td></tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="dialogOpen" [modal]="true" [header]="(editing() ? 'acp.editTitle' : 'acp.newTitle') | t"
+          [style]="{ width: '32rem' }" [breakpoints]="{ '640px': '95vw' }" [draggable]="false">
+  <form (ngSubmit)="save()" class="flex flex-col gap-4">
+    <div>
+      <label class="field-label" for="cp-code">{{ 'acp.code' | t }} *</label>
+      <input pInputText id="cp-code" name="code" [(ngModel)]="draft.code" class="w-full uppercase" dir="ltr" maxlength="20" placeholder="SUMMER20" />
+    </div>
+    <div>
+      <div class="field-label">{{ 'acp.type' | t }}</div>
+      <p-selectbutton name="type" [options]="typeOptions()" optionLabel="label" optionValue="value" [(ngModel)]="draft.type" [allowEmpty]="false" />
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="field-label" for="cp-value">{{ 'acp.value' | t }} *</label>
+        <p-inputnumber inputId="cp-value" name="value" [(ngModel)]="draft.value" [min]="0" [max]="draft.type === 'percent' ? 100 : 100000"
+                       [suffix]="draft.type === 'percent' ? ' %' : ''" [prefix]="draft.type === 'fixed' ? '$ ' : ''" [fluid]="true" />
+      </div>
+      <div>
+        <label class="field-label" for="cp-min">{{ 'acp.min' | t }}</label>
+        <p-inputnumber inputId="cp-min" name="min" [(ngModel)]="draft.minSubtotal" [min]="0" prefix="$ " [fluid]="true" />
+      </div>
+    </div>
+    <div>
+      <label class="field-label" for="cp-exp">{{ 'acp.expires' | t }}</label>
+      <p-datepicker inputId="cp-exp" name="exp" [(ngModel)]="draft.expiresAt" [showClear]="true" [minDate]="today" dateFormat="yy-mm-dd"
+                    [placeholder]="'acp.noExpiry' | t" appendTo="body" [fluid]="true" />
+    </div>
+    <label class="flex items-center justify-between text-sm font-medium">
+      {{ 'acp.active' | t }} <p-toggleswitch name="active" [(ngModel)]="draft.active" />
+    </label>
+    @if (error()) { <p class="field-error">{{ error() }}</p> }
+    <button type="submit" class="hidden"></button>
+  </form>
+  <ng-template #footer>
+    <p-button severity="secondary" [text]="true" (onClick)="dialogOpen.set(false)">{{ 'common.cancel' | t }}</p-button>
+    <p-button (onClick)="save()"><fa-icon [icon]="i.check" /> {{ 'common.save' | t }}</p-button>
+  </ng-template>
+</p-dialog>

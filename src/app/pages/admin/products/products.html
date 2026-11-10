@@ -3,7 +3,10 @@
     <h2 class="text-4xl">{{ 'ap.title' | t }}</h2>
     <p class="text-sm text-muted">{{ 'ap.count' | t: { n: products.products().length } }}</p>
   </div>
-  <p-button (onClick)="openNew()"><fa-icon [icon]="i.plus" /> {{ 'ap.new' | t }}</p-button>
+  <div class="flex gap-2">
+    <p-button severity="secondary" [outlined]="true" (onClick)="exportCsv()"><fa-icon [icon]="i.download" /> {{ 'common.exportCsv' | t }}</p-button>
+    <p-button (onClick)="openNew()"><fa-icon [icon]="i.plus" /> {{ 'ap.new' | t }}</p-button>
+  </div>
 </div>
 
 <div class="card overflow-hidden">
@@ -24,6 +27,7 @@
         <th pSortableColumn="gender">{{ 'ap.colFor' | t }} <p-sortIcon field="gender" /></th>
         <th pSortableColumn="price">{{ 'ap.colPrice' | t }} <p-sortIcon field="price" /></th>
         <th pSortableColumn="stock">{{ 'ap.colStock' | t }} <p-sortIcon field="stock" /></th>
+        <th>{{ 'pd.wearGuide' | t }}</th>
         <th>{{ 'ap.colFeatured' | t }}</th>
         <th class="w-28 text-end">{{ 'ap.colActions' | t }}</th>
       </tr>
@@ -53,6 +57,7 @@
           <p-tag [value]="p.stock === 0 ? ('ap.outOfStock' | t) : ('ap.units' | t: { n: p.stock })"
                  [severity]="p.stock === 0 ? 'danger' : p.stock <= 5 ? 'warn' : 'success'" />
         </td>
+        <td class="min-w-48"><app-wear-guide [perfume]="p" [compact]="true" /></td>
         <td>@if (p.featured) { <fa-icon [icon]="i.star" class="text-brand-500" /> } @else { <span class="text-faint">—</span> }</td>
         <td class="whitespace-nowrap text-end">
           <p-button [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'ap.edit' | t" [ariaLabel]="'ap.edit' | t" (onClick)="openEdit(p)"><fa-icon [icon]="i.edit" /></p-button>
@@ -61,7 +66,7 @@
       </tr>
     </ng-template>
     <ng-template #emptymessage>
-      <tr><td colspan="8" class="py-10 text-center text-muted">{{ 'ap.empty' | t }}</td></tr>
+      <tr><td colspan="9" class="py-10 text-center text-muted">{{ 'ap.empty' | t }}</td></tr>
     </ng-template>
   </p-table>
 </div>
@@ -100,6 +105,25 @@
       <div><label class="field-label">{{ 'ap.gender' | t }}</label><p-select [options]="genderOptions()" optionLabel="label" optionValue="value" formControlName="gender" class="w-full" appendTo="body" /></div>
       <div><label class="field-label">{{ 'ap.family' | t }} *</label><p-select [options]="categoryOptions()" optionLabel="label" optionValue="value" formControlName="categoryId" [placeholder]="'ap.selectCategory' | t" class="w-full" appendTo="body" [invalid]="bad('categoryId')" /></div>
       <div class="sm:col-span-2"><label class="field-label">{{ 'ap.concentration' | t }}</label><p-select [options]="concentrationOptions()" optionLabel="label" optionValue="value" formControlName="concentration" class="w-full" appendTo="body" /></div>
+      <div class="sm:col-span-2 grid gap-4 rounded-2xl border border-line bg-surface-2 p-4 sm:grid-cols-2">
+        <div class="sm:col-span-2 text-xs font-medium uppercase tracking-[0.18em] text-brand-ink">{{ 'pd.wearGuide' | t }}</div>
+        <div><label class="field-label">{{ 'wear.longevity' | t }}</label><p-select [options]="longevityOptions()" optionLabel="label" optionValue="value" formControlName="longevity" class="w-full" appendTo="body" /></div>
+        <div>
+          <label class="field-label">{{ 'wear.time' | t }}</label>
+          <p-selectbutton [options]="timeOptions()" optionLabel="label" optionValue="value" formControlName="timeOfDay" [allowEmpty]="false" size="small" />
+        </div>
+        <div class="sm:col-span-2">
+          <div class="field-label">{{ 'wear.seasons' | t }}</div>
+          <div class="flex flex-wrap gap-2">
+            @for (s of seasonList; track s) {
+              <button type="button" class="chip" [class.selected]="form.controls.seasons.value.includes(s)" (click)="toggleSeason(s)">
+                <fa-icon [icon]="seasonIcons[s]" /> {{ s | tv: 'season' }}
+              </button>
+            }
+          </div>
+          @if (bad('seasons')) { <p class="field-error">{{ 'ap.seasonsRequired' | t }}</p> }
+        </div>
+      </div>
       <div class="grid gap-4 sm:col-span-2 sm:grid-cols-3">
         <div><label class="field-label">{{ 'ap.topNotes' | t }}</label><input pInputText formControlName="topNotes" class="w-full" [placeholder]="'ap.notesHint' | t" /></div>
         <div><label class="field-label">{{ 'ap.heartNotes' | t }}</label><input pInputText formControlName="heartNotes" class="w-full" [placeholder]="'ap.notesHint' | t" /></div>

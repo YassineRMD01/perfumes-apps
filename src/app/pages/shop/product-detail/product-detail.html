@@ -50,8 +50,8 @@
         <a routerLink="/shop" [queryParams]="{ brand: p.brandId }" class="eyebrow hover:underline">{{ p.brandId | brandName }}</a>
         <h1 class="mt-1 text-5xl">{{ p.name }}</h1>
         <div class="mt-3 flex items-center gap-3 text-sm text-muted">
-          <p-rating [ngModel]="p.rating" [readonly]="true" dir="ltr" />
-          <span>{{ p.rating.toFixed(1) }} · {{ 'pd.reviews' | t: { n: p.reviews } }}</span>
+          <app-star-rating [value]="stats().average" />
+          <a href="#reviews" class="hover:text-brand-ink">{{ stats().average.toFixed(1) }} · {{ 'pd.reviews' | t: { n: stats().count } }}</a>
         </div>
 
         <div class="mt-5 flex items-baseline gap-3">
@@ -71,9 +71,10 @@
 
         <p class="mt-6 leading-relaxed text-muted">{{ p.description }}</p>
 
-        <p-divider />
+        <h3 class="mb-3 mt-8 text-2xl">{{ 'pd.wearGuide' | t }}</h3>
+        <app-wear-guide [perfume]="p" />
 
-        <h3 class="mb-4 text-lg font-semibold">{{ 'pd.pyramid' | t }}</h3>
+        <h3 class="mb-3 mt-8 text-2xl">{{ 'pd.pyramid' | t }}</h3>
         <div class="grid gap-3 sm:grid-cols-3">
           @for (layer of pyramid(); track layer.t) {
             <div class="rounded-xl bg-surface-2 p-4">
@@ -114,6 +115,93 @@
         </div>
       </div>
     </div>
+
+    <!-- Reviews -->
+    <section id="reviews" class="mt-20 scroll-mt-24">
+      <h2 class="mb-6 text-4xl">{{ 'rev.title' | t }}</h2>
+      <div class="grid gap-8 lg:grid-cols-[20rem_1fr]">
+        <aside class="flex flex-col gap-5">
+          <div class="card p-6">
+            <div class="flex items-end gap-3">
+              <span class="font-display text-6xl leading-none">{{ stats().average.toFixed(1) }}</span>
+              <div class="pb-1">
+                <app-star-rating [value]="stats().average" />
+                <div class="text-xs text-muted">{{ 'rev.basedOn' | t: { n: stats().count } }}</div>
+              </div>
+            </div>
+            <ul class="mt-5 space-y-1.5" dir="ltr">
+              @for (count of distribution(); track $index) {
+                <li class="flex items-center gap-2 text-xs text-muted">
+                  <span class="w-3">{{ 5 - $index }}</span><fa-icon [icon]="i.star" class="text-brand-500" />
+                  <span class="dist-bar"><span [style.width.%]="reviewsList().length ? (count / reviewsList().length) * 100 : 0"></span></span>
+                  <span class="w-5 text-end">{{ count }}</span>
+                </li>
+              }
+            </ul>
+            <div class="mt-3 text-xs text-faint">{{ 'rev.written' | t: { n: reviewsList().length } }}</div>
+          </div>
+
+          <div class="card p-6">
+            @if (canReview()) {
+              <h3 class="mb-3 text-2xl">{{ (myReview() ? 'rev.edit' : 'rev.write') | t }}</h3>
+              <form (ngSubmit)="submitReview()" class="flex flex-col gap-3">
+                <div>
+                  <div class="field-label">{{ 'rev.yourRating' | t }}</div>
+                  <div class="rate-input" dir="ltr" role="radiogroup">
+                    @for (n of [1, 2, 3, 4, 5]; track n) {
+                      <button type="button" role="radio" [attr.aria-checked]="draftRating() === n" [attr.aria-label]="n + ' / 5'"
+                              (click)="draftRating.set(n)" (mouseenter)="hoverRating.set(n)" (mouseleave)="hoverRating.set(0)">
+                        <fa-icon [icon]="n <= (hoverRating() || draftRating()) ? i.star : i.starOutline" />
+                      </button>
+                    }
+                  </div>
+                </div>
+                <div>
+                  <label class="field-label" for="review-text">{{ 'rev.comment' | t }}</label>
+                  <textarea pTextarea id="review-text" name="comment" rows="4" class="w-full" [(ngModel)]="draftComment"
+                            [placeholder]="'rev.placeholder' | t" maxlength="800"></textarea>
+                </div>
+                @if (reviewError()) { <p class="field-error">{{ 'rev.ratingRequired' | t }}</p> }
+                <p-button type="submit" styleClass="w-full"><fa-icon [icon]="i.comment" /> {{ 'rev.submit' | t }}</p-button>
+              </form>
+            } @else if (!auth.isLoggedIn()) {
+              <p class="text-sm text-muted">{{ 'rev.signIn' | t }}</p>
+              <p-button class="mt-3 inline-block" size="small" [outlined]="true" routerLink="/login" [queryParams]="{ returnUrl: '/product/' + p.id }">
+                {{ 'nav.signIn' | t }}
+              </p-button>
+            } @else {
+              <p class="text-sm text-muted">{{ 'rev.buyFirst' | t }}</p>
+            }
+          </div>
+        </aside>
+
+        <div>
+          @if (reviewsList().length) {
+            <ul class="flex flex-col gap-4">
+              @for (r of reviewsList(); track r.id) {
+                <li class="card p-5">
+                  <div class="flex flex-wrap items-center gap-3">
+                    <span class="avatar">{{ r.userName[0] }}</span>
+                    <div>
+                      <div class="font-medium">{{ r.userName }}</div>
+                      <div class="flex items-center gap-2 text-xs text-muted">
+                        <span><fa-icon [icon]="i.checkCircle" class="text-emerald-600" /> {{ 'rev.verified' | t }}</span>
+                        <span>·</span>
+                        <span>{{ r.createdAt | ldate }}</span>
+                      </div>
+                    </div>
+                    <app-star-rating class="ms-auto" [value]="r.rating" />
+                  </div>
+                  <p class="mt-3 leading-relaxed text-muted">{{ r.comment }}</p>
+                </li>
+              }
+            </ul>
+          } @else {
+            <div class="card p-10 text-center text-muted">{{ 'rev.none' | t }}</div>
+          }
+        </div>
+      </div>
+    </section>
 
     @if (related().length) {
       <section class="mt-20">

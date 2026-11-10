@@ -7,7 +7,18 @@ import { load, persist } from './storage';
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private readonly imageStore = inject(ImageStore);
-  private readonly _products = signal<Perfume[]>(load('products', SEED_PRODUCTS));
+  private readonly _products = signal<Perfume[]>(
+    // Products saved before the wear attributes existed get them from the seed (or sensible defaults)
+    load<Perfume[]>('products', SEED_PRODUCTS).map((p) => {
+      const seed = SEED_PRODUCTS.find((s) => s.id === p.id);
+      return {
+        ...p,
+        longevity: p.longevity ?? seed?.longevity ?? 'Moderate',
+        seasons: p.seasons ?? seed?.seasons ?? ['Spring', 'Summer', 'Autumn', 'Winter'],
+        timeOfDay: p.timeOfDay ?? seed?.timeOfDay ?? 'Both',
+      };
+    }),
+  );
 
   readonly products = this._products.asReadonly();
   readonly featured = computed(() => this._products().filter((p) => p.featured));

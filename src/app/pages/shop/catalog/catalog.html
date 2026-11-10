@@ -46,6 +46,27 @@
       </div>
       <p-slider dir="ltr" [(ngModel)]="price" [range]="true" [min]="0" [max]="products.maxPrice()" [step]="5" class="mx-2 block" />
     </div>
+    <div>
+      <label class="field-label">{{ 'shop.season' | t }}</label>
+      <div class="flex flex-wrap gap-2">
+        @for (se of seasons; track se) {
+          <button type="button" class="chip" [class.selected]="selectedSeasons().includes(se)" [attr.aria-pressed]="selectedSeasons().includes(se)"
+                  (click)="toggleSeason(se)"><fa-icon [icon]="seasonIcons[se]" /> {{ se | tv: 'season' }}</button>
+        }
+      </div>
+    </div>
+    <div>
+      <label class="field-label">{{ 'shop.time' | t }}</label>
+      <div class="flex flex-wrap gap-2" role="radiogroup">
+        <button type="button" role="radio" class="chip" [class.selected]="time() === 'All'" [attr.aria-checked]="time() === 'All'" (click)="time.set('All')">{{ 'shop.all' | t }}</button>
+        <button type="button" role="radio" class="chip" [class.selected]="time() === 'Day'" [attr.aria-checked]="time() === 'Day'" (click)="time.set('Day')"><fa-icon [icon]="timeIcons.Day" /> {{ 'Day' | tv: 'time' }}</button>
+        <button type="button" role="radio" class="chip" [class.selected]="time() === 'Night'" [attr.aria-checked]="time() === 'Night'" (click)="time.set('Night')"><fa-icon [icon]="timeIcons.Night" /> {{ 'Night' | tv: 'time' }}</button>
+      </div>
+    </div>
+    <div>
+      <label class="field-label">{{ 'shop.longevity' | t }}</label>
+      <p-select [options]="longevityOptions()" optionLabel="label" optionValue="value" [(ngModel)]="minLongevity" [placeholder]="'shop.anyLongevity' | t" class="w-full" appendTo="body" />
+    </div>
     <label class="flex items-center justify-between text-sm font-medium text-ink">
       {{ 'shop.inStock' | t }} <p-toggleswitch [(ngModel)]="inStockOnly" />
     </label>

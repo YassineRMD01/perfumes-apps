@@ -1,0 +1,18 @@
+:host {
+  display: block;
+}
+
+.code {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 0.6rem;
+  border: 1px dashed var(--color-brand-400);
+  background: var(--color-brand-soft);
+  padding: 0.2rem 0.6rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-brand-ink);
+}

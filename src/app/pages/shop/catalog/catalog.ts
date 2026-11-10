@@ -14,14 +14,15 @@ import { SelectModule } from 'primeng/select';
 import { SliderModule } from 'primeng/slider';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { CatalogService } from '../../../core/catalog.service';
-import { Gender, GENDERS } from '../../../core/models';
+import { Gender, GENDERS, LONGEVITIES, Longevity, Season, SEASONS, TimeOfDay } from '../../../core/models';
+import { SEASON_ICONS, TIME_ICONS } from '../../../shared/wear-icons';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { I18N_PIPES } from '../../../core/i18n/pipes';
 import { ProductService } from '../../../core/product.service';
 import { Icons } from '../../../shared/icons';
 import { ProductCard } from '../../../shared/product-card/product-card';
 
-type SortKey = 'featured' | 'priceAsc' | 'priceDesc' | 'rating' | 'newest' | 'name';
+type SortKey = 'featured' | 'priceAsc' | 'priceDesc' | 'rating' | 'newest' | 'name' | 'longevity';
 
 @Component({
   selector: 'app-catalog',
@@ -59,6 +60,17 @@ export class Catalog {
   });
   protected readonly price = linkedSignal<number[]>(() => [0, this.products.maxPrice()]);
   protected readonly inStockOnly = signal(false);
+  protected readonly selectedSeasons = signal<Season[]>([]);
+  /** Day matches "Day" and "Both" perfumes, Night matches "Night" and "Both" */
+  protected readonly time = signal<'All' | Exclude<TimeOfDay, 'Both'>>('All');
+  protected readonly minLongevity = signal<Longevity | null>(null);
+  protected readonly seasons = SEASONS;
+  protected readonly seasonIcons = SEASON_ICONS;
+  protected readonly timeIcons = TIME_ICONS;
+  protected readonly longevityOptions = computed(() => [
+    { value: null, label: this.i18n.t('shop.anyLongevity') },
+    ...LONGEVITIES.slice(1).map((v) => ({ value: v as Longevity | null, label: this.i18n.tv('longevity', v) + ' +' })),
+  ]);
   protected readonly sort = signal<SortKey>('featured');
   protected readonly first = signal(0);
   protected readonly rows = signal(9);
@@ -69,7 +81,7 @@ export class Catalog {
     ...GENDERS.map((g) => ({ label: this.i18n.tv('gender', g), value: g as Gender | 'All' })),
   ]);
   protected readonly sortOptions = computed(() =>
-    (['featured', 'newest', 'priceAsc', 'priceDesc', 'rating', 'name'] as SortKey[]).map((value) => ({
+    (['featured', 'newest', 'priceAsc', 'priceDesc', 'rating', 'longevity', 'name'] as SortKey[]).map((value) => ({
       label: this.i18n.tv('sort', value),
       value,
     })),
@@ -91,6 +103,9 @@ export class Catalog {
     const cats = this.selectedCategories();
     const brands = this.selectedBrands();
     const [min, max] = this.price();
+    const seasons = this.selectedSeasons();
+    const time = this.time();
+    const minLevel = this.minLongevity() ? LONGEVITIES.indexOf(this.minLongevity()!) : -1;
     const list = this.products.products().filter(
       (p) =>
         (!term ||
@@ -100,7 +115,10 @@ export class Catalog {
         (!cats.length || cats.includes(p.categoryId)) &&
         (!brands.length || brands.includes(p.brandId)) &&
         p.price >= min && p.price <= max &&
-        (!this.inStockOnly() || p.stock > 0),
+        (!this.inStockOnly() || p.stock > 0) &&
+        (!seasons.length || seasons.some((s) => p.seasons.includes(s))) &&
+        (time === 'All' || p.timeOfDay === time || p.timeOfDay === 'Both') &&
+        (minLevel < 0 || LONGEVITIES.indexOf(p.longevity) >= minLevel),
     );
     const sorters: Record<SortKey, (a: typeof list[0], b: typeof list[0]) => number> = {
       featured: (a, b) => Number(b.featured) - Number(a.featured) || b.rating - a.rating,
@@ -109,6 +127,7 @@ export class Catalog {
       priceDesc: (a, b) => b.price - a.price,
       rating: (a, b) => b.rating - a.rating,
       name: (a, b) => a.name.localeCompare(b.name),
+      longevity: (a, b) => LONGEVITIES.indexOf(b.longevity) - LONGEVITIES.indexOf(a.longevity),
     };
     return [...list].sort(sorters[this.sort()]);
   });
@@ -129,6 +148,10 @@ export class Catalog {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  toggleSeason(s: Season): void {
+    this.selectedSeasons.update((list) => (list.includes(s) ? list.filter((x) => x !== s) : [...list, s]));
+  }
+
   resetFilters(): void {
     this.search.set('');
     this.gender.set('All');
@@ -136,6 +159,9 @@ export class Catalog {
     this.selectedBrands.set([]);
     this.price.set([0, this.products.maxPrice()]);
     this.inStockOnly.set(false);
+    this.selectedSeasons.set([]);
+    this.time.set('All');
+    this.minLongevity.set(null);
     this.sort.set('featured');
   }
 }

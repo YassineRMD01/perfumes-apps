@@ -1,0 +1,106 @@
+<div class="border-b border-line soft-glow">
+  <div class="container-x flex flex-wrap items-center gap-5 py-10">
+    <span class="avatar">{{ initials() }}</span>
+    <div class="flex-1">
+      <p class="eyebrow">{{ 'nav.account' | t }}</p>
+      <h1 class="text-5xl">{{ user().name }}</h1>
+      <p class="mt-1 text-sm text-muted">
+        {{ user().email }} · {{ 'acc.memberSince' | t: { date: (user().createdAt | ldate) } }}
+      </p>
+    </div>
+    <div class="flex gap-3">
+      <a routerLink="/orders" class="stat">
+        <span class="font-display text-3xl">{{ stats().orders }}</span>
+        <span class="text-xs text-muted">{{ 'nav.myOrders' | t }}</span>
+      </a>
+      <div class="stat">
+        <span class="font-display text-3xl">{{ stats().spent | money: true }}</span>
+        <span class="text-xs text-muted">{{ 'ac.spent' | t }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-x grid gap-6 py-10 lg:grid-cols-2">
+  <!-- Profile -->
+  <section class="card p-6">
+    <h2 class="section-heading"><fa-icon [icon]="i.userPen" /> {{ 'acc.profile' | t }}</h2>
+    <form [formGroup]="profile" (ngSubmit)="saveProfile()" class="flex flex-col gap-4">
+      <div>
+        <label class="field-label" for="acc-name">{{ 'reg.name' | t }}</label>
+        <input pInputText id="acc-name" formControlName="name" class="w-full" [invalid]="profile.controls.name.invalid && profile.controls.name.touched" />
+      </div>
+      <div>
+        <label class="field-label" for="acc-email">{{ 'login.email' | t }}</label>
+        <input pInputText id="acc-email" [value]="user().email" class="w-full" disabled dir="ltr" />
+      </div>
+      <div>
+        <label class="field-label" for="acc-phone">{{ 'reg.phone' | t }}</label>
+        <input pInputText id="acc-phone" formControlName="phone" class="w-full" dir="ltr" />
+      </div>
+      <p-button type="submit" [disabled]="profile.pristine"><fa-icon [icon]="i.check" /> {{ 'common.save' | t }}</p-button>
+    </form>
+  </section>
+
+  <!-- Password -->
+  <section class="card p-6">
+    <h2 class="section-heading"><fa-icon [icon]="i.key" /> {{ 'acc.password' | t }}</h2>
+    <form [formGroup]="password" (ngSubmit)="changePassword()" class="flex flex-col gap-4">
+      @if (wrongPassword()) { <p-message severity="error">{{ 'acc.wrongPassword' | t }}</p-message> }
+      <div>
+        <label class="field-label" for="acc-current">{{ 'acc.currentPassword' | t }}</label>
+        <p-password inputId="acc-current" formControlName="current" [feedback]="false" [toggleMask]="true" [fluid]="true" />
+      </div>
+      <div>
+        <label class="field-label" for="acc-next">{{ 'acc.newPassword' | t }}</label>
+        <p-password inputId="acc-next" formControlName="next" [feedback]="false" [toggleMask]="true" [fluid]="true" />
+        @if (password.controls.next.invalid && password.controls.next.touched) { <p class="field-error">{{ 'reg.passwordErr' | t }}</p> }
+      </div>
+      <p-button type="submit" severity="secondary" [outlined]="true"><fa-icon [icon]="i.lock" /> {{ 'acc.password' | t }}</p-button>
+    </form>
+  </section>
+
+  <!-- Address -->
+  <section class="card p-6 lg:col-span-2">
+    <h2 class="section-heading"><fa-icon [icon]="i.location" /> {{ 'acc.address' | t }}</h2>
+    <p class="-mt-3 mb-4 text-sm text-muted">{{ 'acc.addressHint' | t }}</p>
+    <form [formGroup]="address" (ngSubmit)="saveAddress()" class="grid gap-4 sm:grid-cols-2">
+      @for (f of addressFields; track f.key) {
+        <div [class.sm:col-span-2]="f.wide">
+          <label class="field-label" [for]="'addr-' + f.key">{{ f.label | t }}</label>
+          <input pInputText [id]="'addr-' + f.key" [formControlName]="f.key" class="w-full"
+                 [invalid]="address.controls[f.key].invalid && address.controls[f.key].touched"
+                 [attr.dir]="f.key === 'phone' || f.key === 'zip' ? 'ltr' : null" />
+        </div>
+      }
+      <div class="sm:col-span-2">
+        <p-button type="submit" [disabled]="address.pristine"><fa-icon [icon]="i.check" /> {{ 'common.save' | t }}</p-button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Reviews -->
+  <section class="card p-6 lg:col-span-2">
+    <h2 class="section-heading"><fa-icon [icon]="i.comment" /> {{ 'acc.reviews' | t }}</h2>
+    @if (myReviews().length) {
+      <ul class="divide-y divide-line">
+        @for (r of myReviews(); track r.id) {
+          <li class="flex flex-wrap items-start gap-4 py-4">
+            <div class="flex-1">
+              @if (r.product; as p) {
+                <a [routerLink]="['/product', p.id]" class="font-display text-xl hover:text-brand-ink">{{ p.name }}</a>
+              }
+              <p class="mt-1 text-sm text-muted">{{ r.comment }}</p>
+            </div>
+            <div class="text-end">
+              <app-star-rating [value]="r.rating" />
+              <div class="text-xs text-faint">{{ r.createdAt | ldate }}</div>
+            </div>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="text-sm text-muted">{{ 'acc.noReviews' | t }}</p>
+    }
+  </section>
+</div>

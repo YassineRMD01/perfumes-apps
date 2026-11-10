@@ -1,0 +1,9 @@
+:host {
+  display: inline-flex;
+}
+
+.stars {
+  display: inline-flex;
+  gap: 0.1rem;
+  color: var(--color-brand-500);
+}

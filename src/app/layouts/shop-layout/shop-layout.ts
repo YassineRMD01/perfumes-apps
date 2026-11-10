@@ -71,6 +71,7 @@ export class ShopLayout {
     { label: this.auth.currentUser()?.email, disabled: true },
     { separator: true },
     ...(this.auth.isAdmin() ? [{ label: this.i18n.t('nav.adminPanel'), routerLink: '/admin' }] : []),
+    { label: this.i18n.t('nav.account'), routerLink: '/account' },
     { label: this.i18n.t('nav.myOrders'), routerLink: '/orders' },
     { label: this.i18n.t('nav.wishlist'), routerLink: '/wishlist' },
     { separator: true },

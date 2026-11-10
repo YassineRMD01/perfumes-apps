@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+.kpi-icon {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 0.9rem;
+  background: var(--color-brand-soft);
+  font-size: 1.15rem;
+  color: var(--color-brand-ink);
+}

@@ -1,6 +1,9 @@
-<div class="mb-6">
-  <h2 class="text-4xl">{{ 'ao.title' | t }}</h2>
-  <p class="text-sm text-muted">{{ 'ao.subtitle' | t }}</p>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h2 class="text-4xl">{{ 'ao.title' | t }}</h2>
+    <p class="text-sm text-muted">{{ 'ao.subtitle' | t }}</p>
+  </div>
+  <p-button severity="secondary" [outlined]="true" (onClick)="exportCsv()"><fa-icon [icon]="i.download" /> {{ 'common.exportCsv' | t }}</p-button>
 </div>
 
 <div class="card overflow-hidden">
@@ -88,6 +91,9 @@
     </ul>
     <dl class="mt-2 space-y-1 border-t border-line pt-3 text-sm">
       <div class="flex justify-between"><dt class="text-muted">{{ 'common.subtotal' | t }}</dt><dd>{{ o.subtotal | money }}</dd></div>
+      @if (o.discount) {
+        <div class="flex justify-between text-emerald-700"><dt>{{ 'cart.discount' | t: { code: o.couponCode ?? '' } }}</dt><dd>−{{ o.discount | money }}</dd></div>
+      }
       <div class="flex justify-between"><dt class="text-muted">{{ 'common.shipping' | t }}</dt><dd>{{ o.shipping ? (o.shipping | money) : ('common.free' | t) }}</dd></div>
       <div class="flex justify-between text-base font-bold"><dt>{{ 'common.total' | t }}</dt><dd>{{ o.total | money }}</dd></div>
     </dl>

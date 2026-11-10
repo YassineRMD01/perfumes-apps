@@ -19,6 +19,7 @@
         <th pSortableColumn="orders">{{ 'ac.orders' | t }} <p-sortIcon field="orders" /></th>
         <th pSortableColumn="spent">{{ 'ac.spent' | t }} <p-sortIcon field="spent" /></th>
         <th>{{ 'ac.segment' | t }}</th>
+        <th class="w-16"></th>
       </tr>
     </ng-template>
     <ng-template #body let-c>
@@ -37,8 +38,57 @@
           <p-tag [value]="(c.spent >= 300 ? 'VIP' : c.orders ? 'Returning' : 'New') | tv: 'seg'"
                  [severity]="c.spent >= 300 ? 'warn' : c.orders ? 'info' : 'secondary'" />
         </td>
+        <td>
+          <p-button [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'ac.view' | t" [ariaLabel]="'ac.view' | t" (onClick)="selectedId.set(c.id)">
+            <fa-icon [icon]="i.eye" />
+          </p-button>
+        </td>
       </tr>
     </ng-template>
   </p-table>
 </div>
 
+
+<p-dialog [visible]="!!selected()" (visibleChange)="!$event && selectedId.set(null)" [modal]="true" [header]="selected()?.name ?? ''"
+          [style]="{ width: '44rem' }" [breakpoints]="{ '760px': '95vw' }" [draggable]="false">
+  @if (selected(); as c) {
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="info"><span class="text-xs text-muted">{{ 'ac.orders' | t }}</span><span class="text-2xl font-semibold">{{ c.orders }}</span></div>
+      <div class="info"><span class="text-xs text-muted">{{ 'ac.spent' | t }}</span><span class="text-2xl font-semibold">{{ c.spent | money }}</span></div>
+      <div class="info"><span class="text-xs text-muted">{{ 'arv.title' | t }}</span><span class="text-2xl font-semibold">{{ c.reviews }}</span></div>
+    </div>
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      <div class="info">
+        <span class="text-xs font-medium uppercase tracking-wider text-muted">{{ 'acc.profile' | t }}</span>
+        <span>{{ c.email }}</span>
+        <span class="text-sm text-muted" dir="ltr">{{ c.phone || '—' }}</span>
+        <span class="text-xs text-faint">{{ 'acc.memberSince' | t: { date: (c.createdAt | ldate) } }}</span>
+      </div>
+      <div class="info">
+        <span class="text-xs font-medium uppercase tracking-wider text-muted">{{ 'acc.address' | t }}</span>
+        @if (c.address; as a) {
+          <span>{{ a.fullName }}</span>
+          <span class="text-sm text-muted">{{ a.address }}, {{ a.zip }} {{ a.city }}, {{ a.country }}</span>
+        } @else {
+          <span class="text-sm text-faint">{{ 'ac.noAddress' | t }}</span>
+        }
+      </div>
+    </div>
+    <h3 class="mb-2 mt-6 text-xl">{{ 'ac.orderHistory' | t }}</h3>
+    @if (history().length) {
+      <ul class="divide-y divide-line rounded-2xl border border-line">
+        @for (o of history(); track o.id) {
+          <li class="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
+            <span class="font-medium" dir="ltr">{{ o.id }}</span>
+            <span class="text-muted">{{ o.createdAt | ldate }}</span>
+            <span class="text-muted">{{ 'orders.items' | t: { n: o.items.length } }}</span>
+            <span class="ms-auto font-semibold">{{ o.total | money }}</span>
+            <p-tag [value]="o.status | tv: 'status'" [severity]="sevOf(o.status)" />
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="text-sm text-muted">{{ 'orders.none' | t }}</p>
+    }
+  }
+</p-dialog>
