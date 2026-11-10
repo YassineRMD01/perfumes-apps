@@ -44,11 +44,11 @@ import { Icons } from '../../shared/icons';
         </ng-template>
         <ng-template #header>
           <tr>
-            <th pSortableColumn="id">Order <p-sort-icon field="id" /></th>
-            <th pSortableColumn="customerName">Customer <p-sort-icon field="customerName" /></th>
-            <th pSortableColumn="createdAt">Date <p-sort-icon field="createdAt" /></th>
+            <th pSortableColumn="id">Order <p-sortIcon field="id" /></th>
+            <th pSortableColumn="customerName">Customer <p-sortIcon field="customerName" /></th>
+            <th pSortableColumn="createdAt">Date <p-sortIcon field="createdAt" /></th>
             <th>Items</th>
-            <th pSortableColumn="total">Total <p-sort-icon field="total" /></th>
+            <th pSortableColumn="total">Total <p-sortIcon field="total" /></th>
             <th>Payment</th>
             <th class="w-48">Status</th>
             <th class="w-16"></th>

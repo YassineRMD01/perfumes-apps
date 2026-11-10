@@ -53,11 +53,11 @@ const splitNotes = (s: string) => s.split(',').map((x) => x.trim()).filter(Boole
         <ng-template #header>
           <tr>
             <th class="w-16"></th>
-            <th pSortableColumn="name">Perfume <p-sort-icon field="name" /></th>
-            <th pSortableColumn="family">Family <p-sort-icon field="family" /></th>
-            <th pSortableColumn="gender">For <p-sort-icon field="gender" /></th>
-            <th pSortableColumn="price">Price <p-sort-icon field="price" /></th>
-            <th pSortableColumn="stock">Stock <p-sort-icon field="stock" /></th>
+            <th pSortableColumn="name">Perfume <p-sortIcon field="name" /></th>
+            <th pSortableColumn="family">Family <p-sortIcon field="family" /></th>
+            <th pSortableColumn="gender">For <p-sortIcon field="gender" /></th>
+            <th pSortableColumn="price">Price <p-sortIcon field="price" /></th>
+            <th pSortableColumn="stock">Stock <p-sortIcon field="stock" /></th>
             <th>Featured</th>
             <th class="w-28 text-right">Actions</th>
           </tr>

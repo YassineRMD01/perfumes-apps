@@ -9,7 +9,6 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import { routes } from './app.routes';
-import { environment } from '../environments/environment';
 
 const EssencePreset = definePreset(Aura, {
   semantic: {
@@ -39,7 +38,6 @@ export const appConfig: ApplicationConfig = {
     ),
     providePrimeNG({
       ripple: true,
-      ...(environment.primeLicenseKey ? { license: environment.primeLicenseKey } : {}),
       theme: {
         preset: EssencePreset,
         options: {

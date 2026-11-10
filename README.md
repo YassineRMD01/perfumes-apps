@@ -2,7 +2,7 @@
 
 A front-end web app for selling perfumes, with a **client storefront** and an **admin back office**.
 
-**Stack:** Angular 22 (standalone, signals, zoneless, new control flow) · Tailwind CSS 4 · PrimeNG 22 (Aura theme, amber preset) · Font Awesome (`@fortawesome/angular-fontawesome`)
+**Stack:** Angular 22 (standalone, signals, zoneless, new control flow) · Tailwind CSS 4 · PrimeNG 21 (MIT, Aura theme, amber preset) · Font Awesome (`@fortawesome/angular-fontawesome`)
 
 ## Getting started
 
@@ -21,15 +21,12 @@ npm run build      # production build in dist/
 
 The sign-in page also has one-click demo buttons.
 
-### PrimeNG license key
+### About the PrimeNG version
 
-PrimeNG 22+ is distributed under the **PrimeUI License** and needs a license key. A free Community License is available
-for individuals and small teams at https://primeui.dev/licenses. Without a key, PrimeNG shows an
-"Invalid PrimeUI License" notice. Put your key in `src/environments/environment.ts`:
-
-```ts
-export const environment = { primeLicenseKey: 'YOUR-KEY' };
-```
+The app uses **PrimeNG 21.1.x**, the last MIT-licensed release. PrimeNG 22+ moved to the commercial PrimeUI License and
+shows a license banner unless a key is configured. PrimeNG 21 officially declares Angular 21 as its peer, so
+`package.json` has an npm `overrides` block that lets it run on Angular 22. The build and the main user flows were
+tested on that combination. Remove the `overrides` block if you downgrade to Angular 21.
 
 ## Features
 

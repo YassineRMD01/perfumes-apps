@@ -23,8 +23,8 @@
     "@fortawesome/free-brands-svg-icons": "^7.3.1",
     "@fortawesome/free-regular-svg-icons": "^7.3.1",
     "@fortawesome/free-solid-svg-icons": "^7.3.1",
-    "@primeuix/themes": "^3.1.0",
-    "primeng": "^22.1.4",
+    "@primeuix/themes": "^2.0.3",
+    "primeng": "^21.1.10",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
@@ -38,5 +38,15 @@
     "tailwindcss": "^4.3.5",
     "tailwindcss-primeui": "^0.6.1",
     "typescript": "~6.0.2"
+  },
+  "overrides": {
+    "primeng": {
+      "@angular/core": "$@angular/core",
+      "@angular/common": "$@angular/common",
+      "@angular/forms": "$@angular/forms",
+      "@angular/router": "$@angular/router",
+      "@angular/platform-browser": "$@angular/platform-browser",
+      "@angular/cdk": "$@angular/cdk"
+    }
   }
 }

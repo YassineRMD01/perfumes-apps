@@ -31,11 +31,11 @@ import { Icons } from '../../shared/icons';
         </ng-template>
         <ng-template #header>
           <tr>
-            <th pSortableColumn="name">Customer <p-sort-icon field="name" /></th>
+            <th pSortableColumn="name">Customer <p-sortIcon field="name" /></th>
             <th>Phone</th>
-            <th pSortableColumn="createdAt">Joined <p-sort-icon field="createdAt" /></th>
-            <th pSortableColumn="orders">Orders <p-sort-icon field="orders" /></th>
-            <th pSortableColumn="spent">Total spent <p-sort-icon field="spent" /></th>
+            <th pSortableColumn="createdAt">Joined <p-sortIcon field="createdAt" /></th>
+            <th pSortableColumn="orders">Orders <p-sortIcon field="orders" /></th>
+            <th pSortableColumn="spent">Total spent <p-sortIcon field="spent" /></th>
             <th>Segment</th>
           </tr>
         </ng-template>
