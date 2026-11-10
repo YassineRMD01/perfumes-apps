@@ -8,6 +8,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
 import { AuthService } from '../../core/auth.service';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { I18N_PIPES } from '../../core/i18n/pipes';
 import { Icons } from '../../shared/icons';
 
 const matchPasswords = (g: AbstractControl): ValidationErrors | null =>
@@ -16,48 +18,48 @@ const matchPasswords = (g: AbstractControl): ValidationErrors | null =>
 @Component({
   selector: 'app-register',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, FaIconComponent, ButtonModule, InputTextModule, MessageModule, PasswordModule],
+  imports: [ReactiveFormsModule, RouterLink, FaIconComponent, ButtonModule, InputTextModule, MessageModule, PasswordModule, ...I18N_PIPES],
   template: `
     <div class="container-x flex justify-center py-16">
       <div class="card w-full max-w-md p-8">
         <div class="mb-6 text-center">
           <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-100 text-xl text-amber-700"><fa-icon [icon]="i.userPlus" /></span>
-          <h1 class="mt-4 text-3xl font-bold">Create account</h1>
-          <p class="text-sm text-stone-500">Track orders and save your favourites</p>
+          <h1 class="mt-4 text-3xl font-bold">{{ 'reg.title' | t }}</h1>
+          <p class="text-sm text-stone-500">{{ 'reg.subtitle' | t }}</p>
         </div>
 
-        @if (error()) { <p-message severity="error" styleClass="mb-4">{{ error() }}</p-message> }
+        @if (error()) { <p-message severity="error" styleClass="mb-4">{{ 'reg.exists' | t }}</p-message> }
 
         <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4">
           <div>
-            <label class="field-label" for="name">Full name</label>
+            <label class="field-label" for="name">{{ 'reg.name' | t }}</label>
             <input pInputText id="name" formControlName="name" class="w-full" [invalid]="bad('name')" />
-            @if (bad('name')) { <p class="field-error">Please enter your name</p> }
+            @if (bad('name')) { <p class="field-error">{{ 'reg.nameErr' | t }}</p> }
           </div>
           <div>
-            <label class="field-label" for="email">Email</label>
-            <input pInputText id="email" type="email" formControlName="email" class="w-full" [invalid]="bad('email')" />
-            @if (bad('email')) { <p class="field-error">Please enter a valid email</p> }
+            <label class="field-label" for="email">{{ 'login.email' | t }}</label>
+            <input pInputText id="email" type="email" formControlName="email" class="w-full" [invalid]="bad('email')" dir="ltr" />
+            @if (bad('email')) { <p class="field-error">{{ 'reg.emailErr' | t }}</p> }
           </div>
           <div>
-            <label class="field-label" for="phone">Phone (optional)</label>
-            <input pInputText id="phone" formControlName="phone" class="w-full" />
+            <label class="field-label" for="phone">{{ 'reg.phone' | t }}</label>
+            <input pInputText id="phone" formControlName="phone" class="w-full" dir="ltr" />
           </div>
           <div>
-            <label class="field-label" for="password">Password</label>
+            <label class="field-label" for="password">{{ 'login.password' | t }}</label>
             <p-password inputId="password" formControlName="password" [toggleMask]="true" [fluid]="true" />
-            @if (bad('password')) { <p class="field-error">At least 6 characters</p> }
+            @if (bad('password')) { <p class="field-error">{{ 'reg.passwordErr' | t }}</p> }
           </div>
           <div>
-            <label class="field-label" for="confirm">Confirm password</label>
+            <label class="field-label" for="confirm">{{ 'reg.confirm' | t }}</label>
             <p-password inputId="confirm" formControlName="confirm" [feedback]="false" [toggleMask]="true" [fluid]="true" />
-            @if (form.hasError('mismatch') && form.controls.confirm.touched) { <p class="field-error">Passwords don’t match</p> }
+            @if (form.hasError('mismatch') && form.controls.confirm.touched) { <p class="field-error">{{ 'reg.mismatch' | t }}</p> }
           </div>
-          <p-button type="submit" styleClass="w-full">Create account</p-button>
+          <p-button type="submit" styleClass="w-full">{{ 'reg.submit' | t }}</p-button>
         </form>
 
         <p class="mt-6 text-center text-sm text-stone-500">
-          Already have an account? <a routerLink="/login" [queryParams]="{ returnUrl: returnUrl() }" class="font-semibold text-amber-700 hover:underline">Sign in</a>
+          {{ 'reg.have' | t }} <a routerLink="/login" [queryParams]="{ returnUrl: returnUrl() }" class="font-semibold text-amber-700 hover:underline">{{ 'login.submit' | t }}</a>
         </p>
       </div>
     </div>
@@ -69,7 +71,8 @@ export class Register {
   private readonly router = inject(Router);
   private readonly toast = inject(MessageService);
   protected readonly i = Icons;
-  protected readonly error = signal('');
+  private readonly i18n = inject(I18nService);
+  protected readonly error = signal(false);
 
   protected readonly form = inject(FormBuilder).nonNullable.group(
     {
@@ -95,10 +98,10 @@ export class Register {
     const { confirm: _, ...data } = this.form.getRawValue();
     const res = this.auth.register(data);
     if (!res.ok) {
-      this.error.set(res.error!);
+      this.error.set(true);
       return;
     }
-    this.toast.add({ severity: 'success', summary: 'Account created', detail: 'Welcome to Essence!', life: 2500 });
+    this.toast.add({ severity: 'success', summary: this.i18n.t('toast.accountCreated'), detail: this.i18n.t('toast.welcomeEssence'), life: 2500 });
     this.router.navigateByUrl(this.returnUrl() || '/');
   }
 }

@@ -2,6 +2,8 @@ export type Gender = 'Women' | 'Men' | 'Unisex';
 export type Family = 'Floral' | 'Woody' | 'Oriental' | 'Fresh' | 'Citrus' | 'Gourmand';
 export type Concentration = 'Parfum' | 'EDP' | 'EDT' | 'Cologne';
 
+export const MAX_PHOTOS = 5;
+
 export const GENDERS: Gender[] = ['Women', 'Men', 'Unisex'];
 export const FAMILIES: Family[] = ['Floral', 'Woody', 'Oriental', 'Fresh', 'Citrus', 'Gourmand'];
 export const CONCENTRATIONS: Concentration[] = ['Parfum', 'EDP', 'EDT', 'Cologne'];
@@ -23,8 +25,12 @@ export interface Perfume {
   baseNotes: string[];
   /** Bottle tint used by the generated SVG bottle */
   color: string;
-  /** Optional real image; falls back to the SVG bottle */
-  imageUrl?: string | null;
+  /**
+   * Up to MAX_PHOTOS photo references, first one is the cover.
+   * Either an http(s) URL or an "idb:<id>" reference to an uploaded photo stored in IndexedDB.
+   * When empty, the UI falls back to a generated SVG bottle.
+   */
+  images: string[];
   rating: number;
   reviews: number;
   featured: boolean;

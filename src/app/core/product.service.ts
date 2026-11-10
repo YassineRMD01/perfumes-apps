@@ -1,11 +1,19 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { ImageStore } from './image-store.service';
 import { Perfume, PerfumeInput } from './models';
 import { SEED_PRODUCTS } from './seed';
 import { load, persist } from './storage';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  private readonly _products = signal<Perfume[]>(load('products', SEED_PRODUCTS));
+  private readonly imageStore = inject(ImageStore);
+  private readonly _products = signal<Perfume[]>(
+    // Migrate data saved by older versions (single optional imageUrl → images[])
+    load<(Perfume & { imageUrl?: string | null })[]>('products', SEED_PRODUCTS).map(({ imageUrl, ...p }) => ({
+      ...p,
+      images: p.images ?? (imageUrl ? [imageUrl] : []),
+    })),
+  );
 
   readonly products = this._products.asReadonly();
   readonly featured = computed(() => this._products().filter((p) => p.featured));
@@ -32,11 +40,21 @@ export class ProductService {
   }
 
   update(id: number, input: PerfumeInput): void {
+    const previous = this.getById(id);
     this._products.update((list) => list.map((p) => (p.id === id ? { ...p, ...input } : p)));
+    // Free uploaded photos that were removed from the product
+    if (previous) this.imageStore.remove(previous.images.filter((ref) => !input.images.includes(ref)));
   }
 
   delete(id: number): void {
+    const product = this.getById(id);
     this._products.update((list) => list.filter((p) => p.id !== id));
+    if (product) this.imageStore.remove(product.images);
+  }
+
+  /** Resolved cover photo (or null to render the SVG bottle). */
+  cover(p: Pick<Perfume, 'images'> | undefined): string | null {
+    return this.imageStore.resolve(p?.images[0]);
   }
 
   adjustStock(id: number, delta: number): void {

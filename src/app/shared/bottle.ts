@@ -1,17 +1,22 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ImageStore } from '../core/image-store.service';
 
 let uid = 0;
 
-/** Renders a product image, or a generated SVG perfume bottle tinted with the product color. */
+/**
+ * Renders a perfume photo (uploaded or URL) or, when there is none,
+ * a generated SVG bottle tinted with the product color.
+ */
 @Component({
   selector: 'app-bottle',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
-    @if (imageUrl()) {
-      <img [src]="imageUrl()" [alt]="name()" class="h-full w-full object-contain" loading="lazy" />
+    @if (src(); as s) {
+      <img [src]="s" [alt]="name()" class="h-full w-full" [class.object-cover]="fit() === 'cover'"
+           [class.object-contain]="fit() === 'contain'" loading="lazy" />
     } @else {
-      <svg viewBox="0 0 120 160" class="h-full w-full drop-shadow-xl" role="img" [attr.aria-label]="name()">
+      <svg viewBox="0 0 120 160" class="mx-auto h-full w-full drop-shadow-xl" role="img" [attr.aria-label]="name()" direction="ltr">
         <defs>
           <linearGradient [attr.id]="gid" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" [attr.stop-color]="color()" stop-opacity="1" />
@@ -36,11 +41,16 @@ let uid = 0;
   `,
 })
 export class Bottle {
+  private readonly images = inject(ImageStore);
+
   readonly color = input('#d6b38a');
   readonly name = input('');
   readonly brand = input('');
-  readonly imageUrl = input<string | null | undefined>(null);
+  /** Photo reference (URL or "idb:" id). */
+  readonly image = input<string | null | undefined>(null);
+  readonly fit = input<'contain' | 'cover'>('contain');
 
+  protected readonly src = computed(() => this.images.resolve(this.image()));
   protected readonly gid = `bottle-${++uid}`;
   protected readonly label = computed(() => {
     const n = this.name();

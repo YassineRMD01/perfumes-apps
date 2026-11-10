@@ -24,6 +24,11 @@ export function persist<T>(key: string, source: Signal<T>): void {
 
 export function resetDemoData(): void {
   Object.keys(localStorage)
-    .filter((k) => k.startsWith(PREFIX))
+    .filter((k) => k.startsWith(PREFIX) && k !== PREFIX + 'lang')
     .forEach((k) => localStorage.removeItem(k));
+  try {
+    indexedDB.deleteDatabase('essence-images');
+  } catch {
+    /* ignore */
+  }
 }

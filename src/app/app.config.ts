@@ -3,7 +3,9 @@ import {
   provideRouter,
   withComponentInputBinding,
   withInMemoryScrolling,
+  TitleStrategy,
 } from '@angular/router';
+import { I18nTitleStrategy } from './core/i18n/title-strategy';
 import { providePrimeNG } from 'primeng/config';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { definePreset } from '@primeuix/themes';
@@ -46,6 +48,7 @@ export const appConfig: ApplicationConfig = {
         },
       },
     }),
+    { provide: TitleStrategy, useClass: I18nTitleStrategy },
     MessageService,
     ConfirmationService,
   ],
