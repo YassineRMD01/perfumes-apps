@@ -1,0 +1,50 @@
+@layer theme, base, primeng, components, utilities;
+
+@import 'tailwindcss';
+@plugin 'tailwindcss-primeui';
+
+@theme {
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html,
+  body {
+    @apply bg-stone-50 text-stone-800 antialiased;
+    font-family: var(--font-sans);
+  }
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-serif);
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .nav-link {
+    @apply text-sm font-medium text-stone-600 transition-colors hover:text-amber-700;
+  }
+  .nav-link.active {
+    @apply text-amber-700;
+  }
+  .admin-link {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-stone-300 transition-colors hover:bg-stone-800 hover:text-white;
+  }
+  .admin-link.active {
+    @apply bg-amber-600/20 text-amber-400;
+  }
+  .card {
+    @apply rounded-2xl border border-stone-200 bg-white shadow-sm;
+  }
+  .field-label {
+    @apply mb-1 block text-sm font-medium text-stone-700;
+  }
+  .field-error {
+    @apply mt-1 text-xs text-red-600;
+  }
+}
