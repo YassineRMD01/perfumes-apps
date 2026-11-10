@@ -1,5 +1,7 @@
 import { inject, Pipe, PipeTransform } from '@angular/core';
 import { TranslationKey } from './en';
+import { CatalogService } from '../catalog.service';
+import { CurrencyService } from '../currency.service';
 import { I18nService, Params } from './i18n.service';
 
 // These pipes are impure on purpose: they read the language signal, so the view re-renders on language change.
@@ -17,17 +19,38 @@ export class TranslatePipe implements PipeTransform {
 @Pipe({ name: 'tv', pure: false })
 export class TranslateValuePipe implements PipeTransform {
   private readonly i18n = inject(I18nService);
-  transform(value: string, prefix: 'gender' | 'family' | 'familyBlurb' | 'conc' | 'status' | 'payment' | 'seg'): string {
+  transform(value: string, prefix: 'gender' | 'conc' | 'status' | 'payment' | 'seg' | 'cur' | 'accent' | 'sort'): string {
     return this.i18n.tv(prefix, value);
   }
 }
 
-/** Locale-aware USD amount: {{ price | money }} · {{ total | money: true }} (no decimals) */
+/** USD amount converted to the visitor's currency: {{ price | money }} · {{ total | money: true }} (no decimals) */
 @Pipe({ name: 'money', pure: false })
 export class MoneyPipe implements PipeTransform {
-  private readonly i18n = inject(I18nService);
+  private readonly currency = inject(CurrencyService);
   transform(value: number | null | undefined, wholeNumbers = false): string {
-    return this.i18n.money(value, wholeNumbers);
+    return this.currency.format(value, wholeNumbers);
+  }
+}
+
+/** Brand id → name: {{ p.brandId | brandName }} */
+@Pipe({ name: 'brandName', pure: false })
+export class BrandNamePipe implements PipeTransform {
+  private readonly catalog = inject(CatalogService);
+  transform(id: number): string {
+    return this.catalog.brandName(id);
+  }
+}
+
+/** Category id → name (or description) in the current language: {{ p.categoryId | categoryName }} */
+@Pipe({ name: 'categoryName', pure: false })
+export class CategoryNamePipe implements PipeTransform {
+  private readonly catalog = inject(CatalogService);
+  private readonly i18n = inject(I18nService);
+  transform(id: string, field: 'name' | 'description' = 'name'): string {
+    const c = this.catalog.category(id);
+    if (!c) return '—';
+    return c[field][this.i18n.lang()] || c[field].en;
   }
 }
 
@@ -40,4 +63,4 @@ export class LocalDatePipe implements PipeTransform {
   }
 }
 
-export const I18N_PIPES = [TranslatePipe, TranslateValuePipe, MoneyPipe, LocalDatePipe] as const;
+export const I18N_PIPES = [TranslatePipe, TranslateValuePipe, MoneyPipe, LocalDatePipe, BrandNamePipe, CategoryNamePipe] as const;

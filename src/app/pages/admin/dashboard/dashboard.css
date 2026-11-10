@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+/* KPI icon tones — tinted from the surface so they stay soft in light and dark mode */
+.tone-brand { background: var(--color-brand-soft); color: var(--color-brand-ink); }
+.tone-sky { background: color-mix(in srgb, #7fb0d8 22%, var(--color-surface)); color: color-mix(in srgb, #3f78a6 85%, var(--color-ink)); }
+.tone-sage { background: color-mix(in srgb, #8fbf9c 24%, var(--color-surface)); color: color-mix(in srgb, #4a8a5c 85%, var(--color-ink)); }
+.tone-lilac { background: color-mix(in srgb, #b9a2de 24%, var(--color-surface)); color: color-mix(in srgb, #7558aa 85%, var(--color-ink)); }
+
+:host-context(.app-dark) .tone-sky { color: #a9cdea; }
+:host-context(.app-dark) .tone-sage { color: #a9d7b6; }
+:host-context(.app-dark) .tone-lilac { color: #cdbbec; }

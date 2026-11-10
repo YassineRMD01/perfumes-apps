@@ -1,0 +1,77 @@
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h2 class="text-4xl">{{ 'acat.title' | t }}</h2>
+    <p class="text-sm text-muted">{{ 'acat.subtitle' | t }}</p>
+  </div>
+  <p-button (onClick)="open(null)"><fa-icon [icon]="i.plus" /> {{ 'acat.new' | t }}</p-button>
+</div>
+
+@if (cards().length) {
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    @for (c of cards(); track c.id) {
+      <article class="category-card" [style.--tile]="c.color">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <span class="swatch"><fa-icon [icon]="i.drop" /></span>
+            <h3 class="mt-4 text-2xl">{{ label(c) }}</h3>
+            <p class="text-sm text-muted">{{ c.description[i18n.lang()] || c.description.en }}</p>
+          </div>
+          <div class="flex shrink-0">
+            <p-button [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'common.edit' | t" [ariaLabel]="'common.edit' | t" (onClick)="open(c)"><fa-icon [icon]="i.edit" /></p-button>
+            <p-button [text]="true" [rounded]="true" severity="danger" [pTooltip]="'common.delete' | t" [ariaLabel]="'common.delete' | t" (onClick)="remove(c)"><fa-icon [icon]="i.trash" /></p-button>
+          </div>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-1.5">
+          @for (l of languages; track l.code) {
+            <span class="lang-pill" [attr.lang]="l.code" [attr.dir]="l.dir"><b>{{ l.code.toUpperCase() }}</b> {{ c.name[l.code] }}</span>
+          }
+        </div>
+        <div class="mt-4 text-xs font-medium text-brand-ink">{{ 'common.products' | t: { n: c.count } }}</div>
+      </article>
+    }
+  </div>
+} @else {
+  <div class="card py-16 text-center text-muted">{{ 'acat.empty' | t }}</div>
+}
+
+<p-dialog [(visible)]="dialogOpen" [modal]="true" [header]="(editing() ? 'acat.editTitle' : 'acat.newTitle') | t"
+          [style]="{ width: '40rem' }" [breakpoints]="{ '720px': '95vw' }" [draggable]="false">
+  <form (ngSubmit)="save()" class="flex flex-col gap-5">
+    <div>
+      <div class="field-label">{{ 'acat.names' | t }}</div>
+      <div class="grid gap-3 sm:grid-cols-2">
+        @for (l of languages; track l.code) {
+          <label class="lang-field">
+            <span class="lang-field__tag">{{ l.label }}{{ l.code === 'en' ? ' *' : '' }}</span>
+            <input pInputText [name]="'name-' + l.code" [(ngModel)]="name[l.code]" [attr.dir]="l.dir" [attr.lang]="l.code" class="w-full"
+                   [invalid]="l.code === 'en' && submitted() && !name.en.trim()" />
+          </label>
+        }
+      </div>
+      @if (submitted() && !name.en.trim()) { <p class="field-error">{{ 'acat.enRequired' | t }}</p> }
+    </div>
+    <div>
+      <div class="field-label">{{ 'acat.descriptions' | t }}</div>
+      <div class="grid gap-3 sm:grid-cols-2">
+        @for (l of languages; track l.code) {
+          <label class="lang-field">
+            <span class="lang-field__tag">{{ l.label }}</span>
+            <input pInputText [name]="'desc-' + l.code" [(ngModel)]="description[l.code]" [attr.dir]="l.dir" [attr.lang]="l.code" class="w-full" />
+          </label>
+        }
+      </div>
+    </div>
+    <label class="flex items-center justify-between gap-3">
+      <span class="field-label !mb-0">{{ 'acat.color' | t }}</span>
+      <span class="flex items-center gap-3">
+        <span class="preview" [style.--tile]="color">{{ name[i18n.lang()] || name.en || '…' }}</span>
+        <input type="color" name="color" [(ngModel)]="color" class="h-9 w-12 cursor-pointer rounded-lg border border-line bg-surface" />
+      </span>
+    </label>
+    <button type="submit" class="hidden"></button>
+  </form>
+  <ng-template #footer>
+    <p-button severity="secondary" [text]="true" (onClick)="dialogOpen.set(false)">{{ 'common.cancel' | t }}</p-button>
+    <p-button (onClick)="save()"><fa-icon [icon]="i.check" /> {{ 'common.save' | t }}</p-button>
+  </ng-template>
+</p-dialog>

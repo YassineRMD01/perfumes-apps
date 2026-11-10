@@ -1,0 +1,45 @@
+:host {
+  display: inline-flex;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--color-ink);
+}
+
+.logo__mark {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+}
+
+.logo__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+/* The wordmark always uses the Latin display face, even in Arabic */
+.logo__name {
+  font-family: var(--font-serif);
+  font-size: 1.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.logo__tagline {
+  margin-top: 0.3rem;
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-brand-ink);
+}
+
+.logo--sm .logo__mark { width: 1.9rem; height: 1.9rem; }
+.logo--sm .logo__name { font-size: 1.35rem; }
+.logo--lg .logo__mark { width: 3rem; height: 3rem; }
+.logo--lg .logo__name { font-size: 2.2rem; }

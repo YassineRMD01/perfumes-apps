@@ -1,12 +1,14 @@
 import { computed, DOCUMENT, effect, inject, Injectable, signal } from '@angular/core';
 import { PrimeNG } from 'primeng/config';
+import { Lang } from '../models';
+import { SettingsService } from '../settings.service';
 import { load } from '../storage';
 import { ar } from './ar';
 import { en, TranslationKey } from './en';
 import { es } from './es';
 import { fr } from './fr';
 
-export type Lang = 'en' | 'fr' | 'es' | 'ar';
+export type { Lang };
 
 export interface LanguageOption {
   code: Lang;
@@ -39,19 +41,13 @@ function detectLang(): Lang {
 export class I18nService {
   private readonly document = inject(DOCUMENT);
   private readonly primeng = inject(PrimeNG);
+  private readonly settings = inject(SettingsService);
 
   readonly lang = signal<Lang>(detectLang());
   readonly option = computed(() => LANGUAGES.find((l) => l.code === this.lang())!);
   readonly locale = computed(() => this.option().locale);
   readonly dir = computed(() => this.option().dir);
   readonly isRtl = computed(() => this.dir() === 'rtl');
-
-  private readonly currencyFmt = computed(
-    () => new Intl.NumberFormat(this.locale(), { style: 'currency', currency: 'USD', currencyDisplay: 'narrowSymbol' }),
-  );
-  private readonly currencyFmtInt = computed(
-    () => new Intl.NumberFormat(this.locale(), { style: 'currency', currency: 'USD', currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 }),
-  );
 
   constructor() {
     effect(() => {
@@ -60,7 +56,7 @@ export class I18nService {
       html.lang = opt.code;
       html.dir = opt.dir;
       try {
-        localStorage.setItem('essence.lang', JSON.stringify(opt.code));
+        localStorage.setItem('lumora.lang', JSON.stringify(opt.code));
       } catch {
         /* ignore */
       }
@@ -83,22 +79,20 @@ export class I18nService {
     this.lang.set(lang);
   }
 
-  /** Translate a key, replacing {placeholders} with params. Reactive when called inside templates/computeds. */
+  /**
+   * Translate a key, replacing {placeholders} with params. {store} is always available (the store name
+   * from the admin settings). Reactive when called inside templates/computeds.
+   */
   t(key: TranslationKey, params?: Params): string {
-    const text = DICTIONARIES[this.lang()][key] ?? en[key] ?? key;
-    return params ? text.replace(/\{(\w+)\}/g, (_, p) => String(params[p] ?? `{${p}}`)) : text;
+    const text: string = DICTIONARIES[this.lang()][key] ?? en[key] ?? key;
+    if (!text.includes('{')) return text;
+    const all: Params = { store: this.settings.storeName(), ...params };
+    return text.replace(/\{(\w+)\}/g, (_, p) => String(all[p] ?? `{${p}}`));
   }
 
   /** Translate an enum-like value, e.g. tv('status', 'Pending') → key "status.Pending". */
   tv(prefix: string, value: string): string {
     return this.t(`${prefix}.${value}` as TranslationKey);
-  }
-
-  money(value: number | null | undefined, wholeNumbers = false): string {
-    // Some locales (e.g. Arabic) print "US$" even with narrowSymbol: normalise to "$"
-    return (wholeNumbers ? this.currencyFmtInt() : this.currencyFmt()).format(value ?? 0)
-      .replace(/US\$|\$US/, '$')
-      .replace(/[\u200e\u200f\u061c]/g, ''); // drop bidi marks so amounts read correctly inside LTR spans
   }
 
   date(value: string | Date, style: 'short' | 'date' | 'datetime' = 'date'): string {

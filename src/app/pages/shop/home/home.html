@@ -1,0 +1,125 @@
+<!-- Hero -->
+<section class="hero soft-glow">
+  <div class="container-x grid items-center gap-12 py-16 md:grid-cols-2 md:py-24">
+    <div>
+      <span class="hero-badge"><fa-icon [icon]="i.magic" /> {{ 'home.badge' | t }}</span>
+      <h1 class="hero-title" [innerHTML]="'home.title' | t"></h1>
+      <p class="mt-5 max-w-md text-lg text-muted">{{ 'home.subtitle' | t }}</p>
+      <div class="mt-9 flex flex-wrap gap-3">
+        <p-button routerLink="/shop" size="large">{{ 'home.shopCta' | t }} <fa-icon [icon]="i.arrowRight" class="rtl:-scale-x-100" /></p-button>
+        <p-button routerLink="/shop" [queryParams]="{ category: 'oriental' }" size="large" [outlined]="true">
+          {{ 'home.discoverOud' | t }}
+        </p-button>
+      </div>
+    </div>
+    @if (hero(); as h) {
+      <a [routerLink]="['/product', h.id]" class="hero-visual">
+        <div class="hero-arch">
+          <app-bottle class="h-full w-full" [color]="h.color" [name]="h.name" [brand]="h.brandId | brandName" [image]="h.images[0]"
+                      [fit]="h.images.length ? 'cover' : 'contain'" />
+        </div>
+        <div class="hero-caption">
+          <span class="eyebrow">{{ h.brandId | brandName }}</span>
+          <span class="font-display text-xl">{{ h.name }}</span>
+          <span class="text-sm text-muted">{{ h.price | money }}</span>
+        </div>
+      </a>
+    }
+  </div>
+</section>
+
+<!-- Perks -->
+<section class="border-y border-line bg-surface">
+  <div class="container-x grid grid-cols-2 gap-6 py-6 text-sm md:grid-cols-4">
+    @for (perk of perks; track perk.title) {
+      <div class="flex items-center gap-3">
+        <span class="perk-icon"><fa-icon [icon]="perk.icon" /></span>
+        <div>
+          <div class="font-medium">{{ perk.title | t }}</div>
+          <div class="text-xs text-muted">{{ perk.text | t: { amount: (cart.freeShippingThreshold() | money: true) } }}</div>
+        </div>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Featured -->
+<section class="container-x py-20">
+  <div class="mb-10 flex items-end justify-between">
+    <div>
+      <p class="eyebrow">{{ 'home.bestsellers' | t }}</p>
+      <h2 class="section-title">{{ 'home.featured' | t }}</h2>
+    </div>
+    <a routerLink="/shop" class="nav-link hidden sm:inline">{{ 'home.viewAll' | t }} <fa-icon [icon]="i.arrowRight" class="inline-block rtl:-scale-x-100" /></a>
+  </div>
+  <!-- The carousel stays LTR internally so its sliding math is correct in Arabic -->
+  <div dir="ltr">
+    <p-carousel [value]="products.featured()" [numVisible]="4" [numScroll]="1" [circular]="true"
+                [responsiveOptions]="responsive" [showIndicators]="false">
+      <ng-template #item let-p>
+        <div class="h-full p-2" [attr.dir]="i18n.dir()"><app-product-card [product]="p" /></div>
+      </ng-template>
+    </p-carousel>
+  </div>
+</section>
+
+<!-- Categories -->
+<section class="bg-surface py-20">
+  <div class="container-x">
+    <p class="eyebrow">{{ 'home.families' | t }}</p>
+    <h2 class="section-title mb-10">{{ 'home.shopByScent' | t }}</h2>
+    <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+      @for (c of catalog.categories(); track c.id) {
+        <a routerLink="/shop" [queryParams]="{ category: c.id }" class="category-tile" [style.--tile]="c.color">
+          <fa-icon [icon]="i.drop" class="category-tile__icon" />
+          <div class="font-display mt-8 text-2xl">{{ c.id | categoryName }}</div>
+          <div class="text-xs text-muted">{{ c.id | categoryName: 'description' }}</div>
+        </a>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- New arrivals -->
+<section class="container-x py-20">
+  <p class="eyebrow">{{ 'home.justLanded' | t }}</p>
+  <h2 class="section-title mb-10">{{ 'home.newArrivals' | t }}</h2>
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    @for (p of products.newArrivals(); track p.id) {
+      <app-product-card [product]="p" />
+    }
+  </div>
+</section>
+
+<!-- Brands -->
+<section class="border-y border-line bg-surface py-20">
+  <div class="container-x">
+    <p class="eyebrow">{{ 'home.brandsEyebrow' | t }}</p>
+    <h2 class="section-title mb-10">{{ 'home.brandsTitle' | t }}</h2>
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      @for (b of brands(); track b.id) {
+        <a routerLink="/shop" [queryParams]="{ brand: b.id }" class="brand-tile">
+          @if (b.logoSrc) {
+            <img [src]="b.logoSrc" [alt]="b.name" class="h-14 w-14 rounded-2xl object-cover" />
+          } @else {
+            <span class="brand-monogram">{{ b.name[0] }}</span>
+          }
+          <span class="font-display mt-3 text-lg leading-tight">{{ b.name }}</span>
+          <span class="text-xs text-muted">{{ 'common.products' | t: { n: b.count } }}</span>
+        </a>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section class="container-x pt-20">
+  <div class="newsletter soft-glow">
+    <h2 class="section-title">{{ 'home.newsletterTitle' | t }}</h2>
+    <p class="mt-2 text-muted">{{ 'home.newsletterText' | t }}</p>
+    <form class="mx-auto mt-7 flex max-w-md flex-col gap-3 sm:flex-row" (submit)="$event.preventDefault()">
+      <input type="email" [placeholder]="'home.emailPlaceholder' | t" dir="ltr" class="newsletter-input" />
+      <p-button type="submit" size="large">{{ 'home.subscribe' | t }}</p-button>
+    </form>
+  </div>
+</section>

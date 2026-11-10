@@ -1,0 +1,56 @@
+<div class="flex min-h-screen bg-page">
+  @if (sidebarOpen()) {
+    <div class="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden" (click)="sidebarOpen.set(false)"></div>
+  }
+
+  <aside class="sidebar lg:flex" [class.flex]="sidebarOpen()" [class.hidden]="!sidebarOpen()">
+    <a routerLink="/admin" class="mb-8 block px-2 pt-2">
+      <app-logo size="sm" />
+      <div class="eyebrow mt-2 !text-[10px]">{{ 'admin.console' | t }}</div>
+    </a>
+
+    <nav class="flex flex-col gap-1">
+      @for (l of links; track l.path) {
+        <a [routerLink]="l.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: l.exact }"
+           class="admin-link" (click)="sidebarOpen.set(false)">
+          <fa-icon [icon]="l.icon" class="w-5" />{{ l.label | t }}
+        </a>
+      }
+      <div class="mx-3 my-3 border-t border-line"></div>
+      @for (l of catalogLinks; track l.path) {
+        <a [routerLink]="l.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: l.exact }"
+           class="admin-link" (click)="sidebarOpen.set(false)">
+          <fa-icon [icon]="l.icon" class="w-5" />{{ l.label | t }}
+        </a>
+      }
+    </nav>
+
+    <div class="mt-auto flex flex-col gap-1 border-t border-line pt-4">
+      <a routerLink="/" class="admin-link"><fa-icon [icon]="i.store" class="w-5" />{{ 'admin.viewStore' | t }}</a>
+      <button class="admin-link text-start" (click)="resetData()"><fa-icon [icon]="i.reset" class="w-5" />{{ 'admin.reset' | t }}</button>
+      <button class="admin-link text-start" (click)="logout()"><fa-icon [icon]="i.logout" class="w-5 rtl:-scale-x-100" />{{ 'nav.signOut' | t }}</button>
+    </div>
+  </aside>
+
+  <div class="flex min-w-0 flex-1 flex-col">
+    <header class="topbar">
+      <button class="icon-btn lg:hidden" (click)="sidebarOpen.set(true)" [attr.aria-label]="'nav.openMenu' | t">
+        <fa-icon [icon]="i.bars" />
+      </button>
+      <h1 class="text-xl">{{ 'admin.backOffice' | t }}</h1>
+      <div class="ms-auto flex items-center gap-1">
+        <app-language-switcher />
+        <app-currency-switcher class="hidden sm:inline-block" />
+        <app-theme-toggle />
+        <div class="ms-2 hidden text-end sm:block">
+          <div class="text-sm font-medium">{{ auth.currentUser()?.name }}</div>
+          <div class="text-xs text-muted">{{ auth.currentUser()?.email }}</div>
+        </div>
+        <p-avatar [label]="(auth.currentUser()?.name ?? 'A')[0]" shape="circle" class="ms-2 !bg-brand-soft !text-brand-ink" />
+      </div>
+    </header>
+    <main class="flex-1 p-4 sm:p-6 lg:p-8">
+      <router-outlet />
+    </main>
+  </div>
+</div>

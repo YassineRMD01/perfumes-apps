@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { AuthService } from './auth.service';
 import { CartService } from './cart.service';
+import { CatalogService } from './catalog.service';
 import { Order, OrderStatus, PaymentMethod, ShippingInfo } from './models';
 import { ProductService } from './product.service';
 import { SEED_ORDERS } from './seed';
@@ -11,6 +12,7 @@ export class OrderService {
   private readonly auth = inject(AuthService);
   private readonly cart = inject(CartService);
   private readonly products = inject(ProductService);
+  private readonly catalog = inject(CatalogService);
   private readonly _orders = signal<Order[]>(load('orders', SEED_ORDERS));
 
   readonly orders = computed(() =>
@@ -36,7 +38,7 @@ export class OrderService {
     const items = this.cart.lines().map((l) => ({
       productId: l.product.id,
       name: l.product.name,
-      brand: l.product.brand,
+      brand: this.catalog.brandName(l.product.brandId),
       color: l.product.color,
       price: l.product.price,
       qty: l.qty,

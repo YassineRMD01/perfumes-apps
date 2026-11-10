@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { CartItem, Perfume } from './models';
 import { ProductService } from './product.service';
+import { SettingsService } from './settings.service';
 import { load, persist } from './storage';
 
 export interface CartLine {
@@ -9,12 +10,14 @@ export interface CartLine {
   lineTotal: number;
 }
 
-export const FREE_SHIPPING_THRESHOLD = 150;
+/** Flat shipping fee in USD (free above the threshold set in the store settings). */
 export const SHIPPING_FEE = 9.9;
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly products = inject(ProductService);
+  private readonly settings = inject(SettingsService);
+  readonly freeShippingThreshold = computed(() => this.settings.settings().freeShippingThreshold);
   private readonly _items = signal<CartItem[]>(load('cart', []));
 
   readonly lines = computed<CartLine[]>(() =>
@@ -28,7 +31,7 @@ export class CartService {
   readonly count = computed(() => this.lines().reduce((s, l) => s + l.qty, 0));
   readonly subtotal = computed(() => this.lines().reduce((s, l) => s + l.lineTotal, 0));
   readonly shipping = computed(() =>
-    this.subtotal() === 0 || this.subtotal() >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE,
+    this.subtotal() === 0 || this.subtotal() >= this.freeShippingThreshold() ? 0 : SHIPPING_FEE,
   );
   readonly total = computed(() => +(this.subtotal() + this.shipping()).toFixed(2));
   readonly isEmpty = computed(() => this.lines().length === 0);

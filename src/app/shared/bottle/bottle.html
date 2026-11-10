@@ -1,0 +1,24 @@
+@if (src(); as s) {
+  <img [src]="s" [alt]="name()" class="photo" [class.photo--cover]="fit() === 'cover'" loading="lazy" />
+} @else {
+  <svg viewBox="0 0 120 160" class="bottle" role="img" [attr.aria-label]="name()" direction="ltr">
+    <defs>
+      <linearGradient [attr.id]="gid" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" [attr.stop-color]="color()" stop-opacity="1" />
+        <stop offset="100%" [attr.stop-color]="color()" stop-opacity="0.5" />
+      </linearGradient>
+      <linearGradient [attr.id]="gid + 'c'" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#d9c9bd" />
+        <stop offset="50%" stop-color="#f5ece6" />
+        <stop offset="100%" stop-color="#c9b6a8" />
+      </linearGradient>
+    </defs>
+    <rect x="42" y="4" width="36" height="28" rx="6" [attr.fill]="'url(#' + gid + 'c)'" />
+    <rect x="50" y="32" width="20" height="12" fill="#e9e1db" />
+    <rect x="16" y="44" width="88" height="110" rx="20" [attr.fill]="'url(#' + gid + ')'" stroke="rgba(255,255,255,.8)" stroke-width="2" />
+    <rect x="24" y="54" width="9" height="88" rx="4.5" fill="#fff" opacity=".35" />
+    <rect x="32" y="86" width="56" height="34" rx="4" fill="#fff" opacity=".92" />
+    <text x="60" y="101" text-anchor="middle" font-size="9" font-family="Cormorant Garamond, serif" font-weight="600" fill="#2d2523">{{ label() }}</text>
+    <text x="60" y="112" text-anchor="middle" font-size="4.8" letter-spacing="1.2" font-family="Jost, sans-serif" fill="#776860">{{ sub() }}</text>
+  </svg>
+}

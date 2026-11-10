@@ -1,6 +1,7 @@
 import { effect, Signal } from '@angular/core';
 
-const PREFIX = 'essence.';
+// Bumped with the Lumora rebrand: older "essence.*" demo data is simply ignored
+export const PREFIX = 'lumora.';
 
 export function load<T>(key: string, fallback: T): T {
   try {
@@ -27,7 +28,7 @@ export function resetDemoData(): void {
     .filter((k) => k.startsWith(PREFIX) && k !== PREFIX + 'lang')
     .forEach((k) => localStorage.removeItem(k));
   try {
-    indexedDB.deleteDatabase('essence-images');
+    indexedDB.deleteDatabase('lumora-images');
   } catch {
     /* ignore */
   }

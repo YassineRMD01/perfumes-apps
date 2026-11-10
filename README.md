@@ -1,4 +1,4 @@
-# Essence — Perfume Shop (Angular 22)
+# Lumora — Perfume Shop (Angular 22)
 
 A front-end web app for selling perfumes, with a **client storefront** and an **admin back office**.
 
@@ -16,8 +16,8 @@ npm run build      # production build in dist/
 
 | Role   | Email                | Password    |
 | ------ | -------------------- | ----------- |
-| Admin  | admin@essence.shop   | admin123    |
-| Client | client@essence.shop  | client123   |
+| Admin  | admin@lumora.shop   | admin123    |
+| Client | client@lumora.shop  | client123   |
 
 The sign-in page also has one-click demo buttons.
 
@@ -27,6 +27,35 @@ The app uses **PrimeNG 21.1.x**, the last MIT-licensed release. PrimeNG 22+ move
 shows a license banner unless a key is configured. PrimeNG 21 officially declares Angular 21 as its peer, so
 `package.json` has an npm `overrides` block that lets it run on Angular 22. The build and the main user flows were
 tested on that combination. Remove the `overrides` block if you downgrade to Angular 21.
+
+## Brand & design
+
+**Lumora** (from *lumière*, light) is a fictional "maison de parfum". Its logo is an arch-shaped perfume bottle with a
+drop, drawn as an SVG in `shared/logo/` and as `public/favicon.svg`. The default design is light: warm ivory
+backgrounds, rose accent, Cormorant Garamond headings and Jost body text (Cairo for Arabic).
+
+- **Light / dark mode**: a toggle in the header for everyone (admin, clients, visitors), saved per visitor.
+  Colors are CSS tokens in `src/styles.css` (`bg-page`, `bg-surface`, `text-ink`, `text-muted`, `border-line`,
+  `brand-*`…) that switch with the `.app-dark` class, along with PrimeNG's dark mode.
+- **Store branding (admin → Settings)**: store name, logo upload and accent color (6 presets or any custom color).
+  The full 50–950 palette is generated from the accent and applied to PrimeNG and to the Tailwind `brand-*` tokens, so
+  the whole storefront and back office update right away for every visitor. A live preview shows the change before
+  saving.
+
+## Currencies
+
+Visitors pick USD, EUR, MAD or AED in the header (or the mobile menu). Prices are stored in USD and converted with
+the exchange rates the admin sets in Settings, which also holds the default currency for new visitors and the
+free-shipping threshold.
+
+## Brands & categories
+
+Both are managed in the back office and used everywhere in the storefront (filters, product pages, home page sections):
+
+- **Brands**: name, country, description and optional logo. Perfumes pick their brand from this list.
+- **Categories**: name and short description in English, French, Spanish and Arabic, plus a tile color.
+  Missing translations fall back to English.
+- A brand or category that still has perfumes cannot be deleted; the admin is asked to move the perfumes first.
 
 ## Languages
 
@@ -76,19 +105,25 @@ To use a real backend, replace `ImageStore.add()` with an upload request that re
 - **Products**: sortable, searchable, paginated table; create/edit dialog with photo manager (up to 5 photos) and live preview; delete with confirmation
 - **Orders**: filter by status and search; inline status changes (cancelling restocks the items); order detail dialog
 - **Customers**: order count, total spent, segment (New, Returning, VIP)
+- **Brands** and **Categories**: create, edit, delete
+- **Settings**: store name, logo, accent color, currencies and exchange rates, free shipping
 - **Reset demo data**
 
 ## Architecture
 
 ```
 src/app/
-  core/       models, seed data, signal-based services (auth, products, cart, wishlist, orders, images), route guards
-  core/i18n/  translation service, dictionaries (en/fr/es/ar), pipes, translated page titles
-  shared/     icon registry, bottle/photo component, product card, photo manager, language switcher
-  layouts/    shop layout (header/footer) and admin layout (sidebar)
-  pages/shop  storefront pages
-  pages/admin back-office pages
+  core/          models, seed data, signal services (auth, products, catalog = brands & categories, cart,
+                 wishlist, orders, images, settings, currency, theme), route guards, color palette helper
+  core/i18n/     translation service, dictionaries (en/fr/es/ar), pipes, translated page titles
+  shared/        logo, bottle/photo, product card, photo manager, language/currency switchers, theme toggle
+  layouts/       shop layout and admin layout
+  pages/shop/    storefront pages
+  pages/admin/   back-office pages
 ```
+
+Every component lives in its own folder with three files: `name.ts` (logic), `name.html` (template) and
+`name.css` (styles), e.g. `shared/product-card/product-card.{ts,html,css}`.
 
 Data is mocked and kept in `localStorage` through signals, so the app runs with no backend. To use a real API,
 replace the service internals with `HttpClient` calls; the components only use the services' signals and methods.

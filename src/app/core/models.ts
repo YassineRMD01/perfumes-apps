@@ -1,35 +1,53 @@
+export type Lang = 'en' | 'fr' | 'es' | 'ar';
+export type Translated = Record<Lang, string>;
+
 export type Gender = 'Women' | 'Men' | 'Unisex';
-export type Family = 'Floral' | 'Woody' | 'Oriental' | 'Fresh' | 'Citrus' | 'Gourmand';
 export type Concentration = 'Parfum' | 'EDP' | 'EDT' | 'Cologne';
 
 export const MAX_PHOTOS = 5;
-
 export const GENDERS: Gender[] = ['Women', 'Men', 'Unisex'];
-export const FAMILIES: Family[] = ['Floral', 'Woody', 'Oriental', 'Fresh', 'Citrus', 'Gourmand'];
 export const CONCENTRATIONS: Concentration[] = ['Parfum', 'EDP', 'EDT', 'Cologne'];
+
+/** Perfume house, managed by the admin. */
+export interface Brand {
+  id: number;
+  name: string;
+  country: string;
+  description: string;
+  /** Optional logo reference (URL or "idb:" upload). */
+  logo: string | null;
+  createdAt: string;
+}
+
+/** Product category (e.g. olfactory family), managed by the admin, named in every language. */
+export interface Category {
+  id: string;
+  name: Translated;
+  description: Translated;
+  /** Accent color used for the category tile. */
+  color: string;
+  createdAt: string;
+}
 
 export interface Perfume {
   id: number;
   name: string;
-  brand: string;
+  brandId: number;
+  categoryId: string;
   description: string;
+  /** Price in the store base currency (USD). */
   price: number;
   oldPrice?: number | null;
   stock: number;
   volumeMl: number;
   gender: Gender;
-  family: Family;
   concentration: Concentration;
   topNotes: string[];
   heartNotes: string[];
   baseNotes: string[];
-  /** Bottle tint used by the generated SVG bottle */
+  /** Bottle tint used by the generated SVG bottle when there is no photo */
   color: string;
-  /**
-   * Up to MAX_PHOTOS photo references, first one is the cover.
-   * Either an http(s) URL or an "idb:<id>" reference to an uploaded photo stored in IndexedDB.
-   * When empty, the UI falls back to a generated SVG bottle.
-   */
+  /** Up to MAX_PHOTOS references (URL or "idb:<id>"), the first one is the cover. */
   images: string[];
   rating: number;
   reviews: number;
@@ -66,6 +84,7 @@ export interface OrderItem {
   name: string;
   brand: string;
   color: string;
+  /** Unit price in USD at the time of the order */
   price: number;
   qty: number;
 }
@@ -103,3 +122,40 @@ export const STATUS_SEVERITY: Record<OrderStatus, 'warn' | 'info' | 'contrast' |
 };
 
 export const severityOf = (status: string) => STATUS_SEVERITY[status as OrderStatus] ?? 'secondary';
+
+// ---- Store settings (managed by the admin, apply to every visitor) ----
+
+export type CurrencyCode = 'USD' | 'EUR' | 'MAD' | 'AED';
+export const CURRENCIES: CurrencyCode[] = ['USD', 'EUR', 'MAD', 'AED'];
+export const BASE_CURRENCY: CurrencyCode = 'USD';
+
+export interface StoreSettings {
+  storeName: string;
+  /** Custom logo reference; null uses the built-in Lumora mark. */
+  logo: string | null;
+  /** Accent color (hex) — the whole UI palette is derived from it. */
+  accent: string;
+  defaultCurrency: CurrencyCode;
+  /** 1 USD = rate × currency */
+  rates: Record<CurrencyCode, number>;
+  /** In USD */
+  freeShippingThreshold: number;
+}
+
+export const ACCENT_PRESETS = [
+  { key: 'rose', color: '#cf7d78' },
+  { key: 'lilac', color: '#9b7fc8' },
+  { key: 'sage', color: '#6f9a7d' },
+  { key: 'champagne', color: '#c39a5a' },
+  { key: 'ocean', color: '#5b8db8' },
+  { key: 'plum', color: '#a35b84' },
+] as const;
+
+export const DEFAULT_SETTINGS: StoreSettings = {
+  storeName: 'Lumora',
+  logo: null,
+  accent: '#cf7d78',
+  defaultCurrency: 'USD',
+  rates: { USD: 1, EUR: 0.92, MAD: 9.95, AED: 3.67 },
+  freeShippingThreshold: 150,
+};

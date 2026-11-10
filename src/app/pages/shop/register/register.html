@@ -1,0 +1,44 @@
+<div class="container-x flex justify-center py-16">
+  <div class="card w-full max-w-md p-8">
+    <div class="mb-6 text-center">
+      <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-xl text-brand-ink"><fa-icon [icon]="i.userPlus" /></span>
+      <h1 class="mt-4 text-4xl">{{ 'reg.title' | t }}</h1>
+      <p class="text-sm text-muted">{{ 'reg.subtitle' | t }}</p>
+    </div>
+
+    @if (error()) { <p-message severity="error" styleClass="mb-4">{{ 'reg.exists' | t }}</p-message> }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4">
+      <div>
+        <label class="field-label" for="name">{{ 'reg.name' | t }}</label>
+        <input pInputText id="name" formControlName="name" class="w-full" [invalid]="bad('name')" />
+        @if (bad('name')) { <p class="field-error">{{ 'reg.nameErr' | t }}</p> }
+      </div>
+      <div>
+        <label class="field-label" for="email">{{ 'login.email' | t }}</label>
+        <input pInputText id="email" type="email" formControlName="email" class="w-full" [invalid]="bad('email')" dir="ltr" />
+        @if (bad('email')) { <p class="field-error">{{ 'reg.emailErr' | t }}</p> }
+      </div>
+      <div>
+        <label class="field-label" for="phone">{{ 'reg.phone' | t }}</label>
+        <input pInputText id="phone" formControlName="phone" class="w-full" dir="ltr" />
+      </div>
+      <div>
+        <label class="field-label" for="password">{{ 'login.password' | t }}</label>
+        <p-password inputId="password" formControlName="password" [toggleMask]="true" [fluid]="true" />
+        @if (bad('password')) { <p class="field-error">{{ 'reg.passwordErr' | t }}</p> }
+      </div>
+      <div>
+        <label class="field-label" for="confirm">{{ 'reg.confirm' | t }}</label>
+        <p-password inputId="confirm" formControlName="confirm" [feedback]="false" [toggleMask]="true" [fluid]="true" />
+        @if (form.hasError('mismatch') && form.controls.confirm.touched) { <p class="field-error">{{ 'reg.mismatch' | t }}</p> }
+      </div>
+      <p-button type="submit" styleClass="w-full">{{ 'reg.submit' | t }}</p-button>
+    </form>
+
+    <p class="mt-6 text-center text-sm text-muted">
+      {{ 'reg.have' | t }} <a routerLink="/login" [queryParams]="{ returnUrl: returnUrl() }" class="font-semibold text-brand-ink hover:underline">{{ 'login.submit' | t }}</a>
+    </p>
+  </div>
+</div>
+

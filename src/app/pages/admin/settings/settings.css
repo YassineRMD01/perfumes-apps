@@ -1,0 +1,144 @@
+:host {
+  display: block;
+}
+
+.section-heading {
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.5rem;
+}
+
+.section-heading fa-icon {
+  font-size: 1rem;
+  color: var(--color-brand-ink);
+}
+
+.swatch {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 9999px;
+  color: #fff;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.35);
+  transition: transform 0.2s;
+}
+
+.swatch:hover {
+  transform: scale(1.08);
+}
+
+.swatch--active {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+.custom-swatch {
+  display: flex;
+  height: 2.5rem;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px dashed var(--color-line);
+  padding: 0 0.85rem 0 0.35rem;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.custom-swatch input {
+  width: 1.9rem;
+  height: 1.9rem;
+  cursor: pointer;
+  border: none;
+  border-radius: 9999px;
+  background: none;
+  padding: 0;
+}
+
+.rate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* Preview uses the draft palette passed as local CSS variables */
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-radius: 1.25rem;
+  background: var(--color-page);
+  padding: 1.25rem;
+}
+
+.preview-mark {
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.65rem;
+  background: linear-gradient(135deg, var(--p300), var(--p600));
+}
+
+.preview-logo-img {
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.65rem;
+  background-size: cover;
+  background-position: center;
+}
+
+.preview-name {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.preview-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 1rem;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  padding: 1rem;
+}
+
+.preview-eyebrow {
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--p700);
+}
+
+:host-context(.app-dark) .preview-eyebrow {
+  color: var(--p300);
+}
+
+.preview-btn {
+  border-radius: 9999px;
+  background: var(--p600);
+  padding: 0.4rem 0.9rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.preview-chip {
+  border-radius: 9999px;
+  border: 1px solid var(--color-line);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.preview-chip--on {
+  border-color: var(--p300);
+  background: color-mix(in srgb, var(--p500) 14%, var(--color-surface));
+  color: var(--p700);
+}
+
+:host-context(.app-dark) .preview-chip--on {
+  color: var(--p300);
+}

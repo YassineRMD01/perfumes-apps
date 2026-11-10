@@ -1,0 +1,133 @@
+@if (product(); as p) {
+  <div class="container-x py-8">
+    <nav class="mb-6 text-sm text-muted">
+      <a routerLink="/" class="hover:text-brand-ink">{{ 'nav.home' | t }}</a> /
+      <a routerLink="/shop" class="hover:text-brand-ink">{{ 'nav.shopAll' | t }}</a> /
+      <a routerLink="/shop" [queryParams]="{ category: p.categoryId }" class="hover:text-brand-ink">{{ p.categoryId | categoryName }}</a> /
+      <span class="text-ink">{{ p.name }}</span>
+    </nav>
+
+    <div class="grid gap-10 lg:grid-cols-2">
+      <!-- Gallery -->
+      <div class="flex flex-col gap-3">
+        <div class="card group relative flex h-[28rem] items-center justify-center overflow-hidden bg-gradient-to-br from-surface-2 to-surface lg:h-[34rem]"
+             tabindex="0" (keydown.arrowLeft)="step(i18n.isRtl() ? 1 : -1)" (keydown.arrowRight)="step(i18n.isRtl() ? -1 : 1)">
+          @if (photos().length) {
+            <img [src]="photos()[active()]" [alt]="p.name" class="h-full w-full object-cover" />
+            @if (photos().length > 1) {
+              <button type="button" (click)="step(-1)" [attr.aria-label]="'pd.prevPhoto' | t"
+                      class="absolute start-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-surface/90 shadow transition hover:scale-110">
+                <fa-icon [icon]="i.chevronLeft" class="rtl:-scale-x-100" />
+              </button>
+              <button type="button" (click)="step(1)" [attr.aria-label]="'pd.nextPhoto' | t"
+                      class="absolute end-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-surface/90 shadow transition hover:scale-110">
+                <fa-icon [icon]="i.chevronRight" class="rtl:-scale-x-100" />
+              </button>
+              <span class="absolute bottom-3 end-3 rounded-full bg-black/60 px-2.5 py-1 text-xs text-white" dir="ltr">
+                {{ active() + 1 }} / {{ photos().length }}
+              </span>
+            }
+          } @else {
+            <div class="absolute inset-20 rounded-full blur-3xl" [style.background]="p.color + '55'"></div>
+            <app-bottle class="relative h-full p-10" [color]="p.color" [name]="p.name" [brand]="p.brandId | brandName" />
+          }
+        </div>
+        @if (photos().length > 1) {
+          <div class="grid grid-cols-5 gap-3">
+            @for (src of photos(); track $index) {
+              <button type="button" (click)="active.set($index)" [attr.aria-label]="'pd.photo' | t: { n: $index + 1 }"
+                      class="aspect-square overflow-hidden rounded-xl border-2 bg-surface-2 transition"
+                      [class.border-brand-400]="$index === active()" [class.border-transparent]="$index !== active()"
+                      [class.opacity-60]="$index !== active()">
+                <img [src]="src" alt="" class="h-full w-full object-cover" />
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <div>
+        <a routerLink="/shop" [queryParams]="{ brand: p.brandId }" class="eyebrow hover:underline">{{ p.brandId | brandName }}</a>
+        <h1 class="mt-1 text-5xl">{{ p.name }}</h1>
+        <div class="mt-3 flex items-center gap-3 text-sm text-muted">
+          <p-rating [ngModel]="p.rating" [readonly]="true" dir="ltr" />
+          <span>{{ p.rating.toFixed(1) }} · {{ 'pd.reviews' | t: { n: p.reviews } }}</span>
+        </div>
+
+        <div class="mt-5 flex items-baseline gap-3">
+          <span class="text-4xl">{{ p.price | money }}</span>
+          @if (p.oldPrice) {
+            <span class="text-lg text-faint line-through">{{ p.oldPrice | money }}</span>
+            <p-tag severity="danger" [value]="'pd.sale' | t" />
+          }
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-2">
+          <p-tag [value]="p.gender | tv: 'gender'" severity="secondary" />
+          <p-tag [value]="p.categoryId | categoryName" severity="secondary" />
+          <p-tag [value]="p.concentration | tv: 'conc'" severity="secondary" />
+          <p-tag [value]="p.volumeMl + ' ml'" severity="secondary" />
+        </div>
+
+        <p class="mt-6 leading-relaxed text-muted">{{ p.description }}</p>
+
+        <p-divider />
+
+        <h3 class="mb-4 text-lg font-semibold">{{ 'pd.pyramid' | t }}</h3>
+        <div class="grid gap-3 sm:grid-cols-3">
+          @for (layer of pyramid(); track layer.t) {
+            <div class="rounded-xl bg-surface-2 p-4">
+              <div class="text-xs font-semibold uppercase tracking-wider text-muted">{{ layer.t | t }}</div>
+              <div class="mt-1 text-sm font-medium">{{ layer.n.join(', ') }}</div>
+            </div>
+          }
+        </div>
+
+        <p-divider />
+
+        <div class="mb-4 text-sm">
+          @if (p.stock === 0) {
+            <span class="font-medium text-red-600"><fa-icon [icon]="i.warning" /> {{ 'pd.outOfStock' | t }}</span>
+          } @else if (p.stock <= 5) {
+            <span class="font-medium text-brand-ink"><fa-icon [icon]="i.fire" /> {{ 'pd.hurry' | t: { n: p.stock } }}</span>
+          } @else {
+            <span class="font-medium text-emerald-700"><fa-icon [icon]="i.checkCircle" /> {{ 'pd.inStock' | t }}</span>
+          }
+          @if (inCart()) { <span class="ms-2 text-muted">{{ 'pd.inCart' | t: { n: inCart() } }}</span> }
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <p-inputnumber [(ngModel)]="qty" [showButtons]="true" buttonLayout="horizontal" [min]="1" [max]="Math.max(1, p.stock - inCart())"
+                         [disabled]="p.stock - inCart() <= 0" inputStyleClass="w-14 text-center" dir="ltr" />
+          <p-button size="large" [disabled]="p.stock - inCart() <= 0" (onClick)="addToCart()" styleClass="flex-1">
+            <fa-icon [icon]="i.cartPlus" /> {{ 'pd.addToCart' | t }}
+          </p-button>
+          <p-button size="large" severity="secondary" [outlined]="true" (onClick)="toggleWish()" [ariaLabel]="'pd.toggleWish' | t">
+            <fa-icon [icon]="wished() ? i.heart : i.heartOutline" [class.text-rose-500]="wished()" />
+          </p-button>
+        </div>
+
+        <div class="mt-6 grid grid-cols-3 gap-3 text-center text-xs text-muted">
+          <div class="rounded-xl border border-line p-3"><fa-icon [icon]="i.truck" class="mb-1 block text-lg text-brand-ink" />{{ 'pd.freeShipping' | t: { amount: (cart.freeShippingThreshold() | money: true) } }}</div>
+          <div class="rounded-xl border border-line p-3"><fa-icon [icon]="i.shield" class="mb-1 block text-lg text-brand-ink" />{{ 'pd.authentic' | t }}</div>
+          <div class="rounded-xl border border-line p-3"><fa-icon [icon]="i.reset" class="mb-1 block text-lg text-brand-ink" />{{ 'pd.returns' | t }}</div>
+        </div>
+      </div>
+    </div>
+
+    @if (related().length) {
+      <section class="mt-20">
+        <h2 class="mb-6 text-3xl">{{ 'pd.related' | t }}</h2>
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          @for (r of related(); track r.id) { <app-product-card [product]="r" /> }
+        </div>
+      </section>
+    }
+  </div>
+} @else {
+  <div class="container-x py-24 text-center">
+    <h1 class="text-4xl">{{ 'pd.notFound' | t }}</h1>
+    <p-button class="mt-6 inline-block" routerLink="/shop">{{ 'pd.backToShop' | t }}</p-button>
+  </div>
+}
+

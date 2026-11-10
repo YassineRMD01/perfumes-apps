@@ -3,30 +3,80 @@
 @import 'tailwindcss';
 @plugin 'tailwindcss-primeui';
 
+/* Lumora design tokens.
+   Neutral tokens switch with the theme (.app-dark on <html>), "brand" shades are generated
+   from the accent color chosen by the admin (see SettingsService) and set inline on <html>. */
 @theme {
-  --font-serif: 'Playfair Display', Georgia, serif;
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Jost', ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: 'Cairo', ui-sans-serif, system-ui, sans-serif;
+
+  /* default accent: Rose */
+  --color-brand-50: #fcf4f3;
+  --color-brand-100: #f9ebea;
+  --color-brand-200: #f1d8d7;
+  --color-brand-300: #e7bebc;
+  --color-brand-400: #db9e9a;
+  --color-brand-500: #cf7d78;
+  --color-brand-600: #b26a66;
+  --color-brand-700: #925754;
+  --color-brand-800: #744544;
+  --color-brand-900: #5d3836;
+  --color-brand-950: #432827;
+
+  --color-page: #fbf8f5;
+  --color-surface: #ffffff;
+  --color-surface-2: #f7f1ed;
+  --color-surface-3: #efe7e2;
+  --color-line: #ece2dc;
+  --color-ink: #2d2523;
+  --color-muted: #776860;
+  --color-faint: #a99b93;
+  /* tinted background + readable accent text, derived from the accent */
+  --color-brand-soft: color-mix(in srgb, var(--color-brand-500) 13%, var(--color-surface));
+  --color-brand-ink: var(--color-brand-700);
+}
+
+.app-dark {
+  --color-page: #141011;
+  --color-surface: #1c1617;
+  --color-surface-2: #251e1f;
+  --color-surface-3: #2f2627;
+  --color-line: #382d2e;
+  --color-ink: #f4ede9;
+  --color-muted: #baaca5;
+  --color-faint: #86786f;
+  --color-brand-soft: color-mix(in srgb, var(--color-brand-500) 18%, var(--color-surface));
+  --color-brand-ink: var(--color-brand-300);
 }
 
 @layer base {
   html,
   body {
-    @apply bg-stone-50 text-stone-800 antialiased;
+    background-color: var(--color-page);
+    color: var(--color-ink);
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
   h1,
   h2,
   h3,
   .font-display {
     font-family: var(--font-serif);
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
-  /* Arabic: Cairo covers both Latin and Arabic glyphs */
   [dir='rtl'] body,
   [dir='rtl'] h1,
   [dir='rtl'] h2,
   [dir='rtl'] h3,
   [dir='rtl'] .font-display {
-    font-family: 'Cairo', var(--font-sans);
+    font-family: var(--font-arabic);
+    letter-spacing: 0;
+  }
+  ::selection {
+    background: var(--color-brand-200);
+    color: var(--color-brand-900);
   }
 }
 
@@ -34,25 +84,43 @@
   .container-x {
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
+  .card {
+    @apply rounded-3xl border border-line bg-surface shadow-[0_1px_2px_rgb(45_37_35/0.04),0_8px_24px_-12px_rgb(45_37_35/0.08)];
+  }
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.22em] text-brand-ink;
+  }
   .nav-link {
-    @apply text-sm font-medium text-stone-600 transition-colors hover:text-amber-700;
+    @apply text-sm font-medium text-muted transition-colors hover:text-brand-ink;
   }
   .nav-link.active {
-    @apply text-amber-700;
+    @apply text-brand-ink;
+  }
+  .icon-btn {
+    @apply relative grid h-10 w-10 place-items-center rounded-full text-lg text-ink transition-colors hover:bg-surface-2;
   }
   .admin-link {
-    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-stone-300 transition-colors hover:bg-stone-800 hover:text-white;
+    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-ink;
   }
   .admin-link.active {
-    @apply bg-amber-600/20 text-amber-400;
+    @apply bg-brand-soft font-medium text-brand-ink;
   }
-  .card {
-    @apply rounded-2xl border border-stone-200 bg-white shadow-sm;
+  .chip {
+    @apply rounded-full border border-line px-3 py-1 text-sm transition-colors hover:bg-surface-2;
+  }
+  .chip.selected {
+    @apply border-brand-400 bg-brand-soft text-brand-ink;
   }
   .field-label {
-    @apply mb-1 block text-sm font-medium text-stone-700;
+    @apply mb-1 block text-sm font-medium text-ink;
   }
   .field-error {
     @apply mt-1 text-xs text-red-600;
+  }
+  .soft-glow {
+    background:
+      radial-gradient(60% 60% at 80% 20%, color-mix(in srgb, var(--color-brand-300) 45%, transparent), transparent 70%),
+      radial-gradient(50% 60% at 10% 90%, color-mix(in srgb, #c8b6e2 35%, transparent), transparent 70%),
+      var(--color-page);
   }
 }

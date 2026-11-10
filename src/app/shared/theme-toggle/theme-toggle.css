@@ -1,0 +1,18 @@
+:host {
+  display: inline-block;
+}
+
+.toggle {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 9999px;
+  color: var(--color-ink);
+  transition: background-color 0.2s, transform 0.3s;
+}
+
+.toggle:hover {
+  background: var(--color-surface-2);
+  transform: rotate(-12deg);
+}

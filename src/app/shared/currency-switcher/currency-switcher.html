@@ -1,0 +1,13 @@
+<button type="button" class="trigger" (click)="menu.toggle($event)" [attr.aria-label]="i18n.t('pref.currency')" aria-haspopup="true">
+  <span class="font-semibold">{{ currency.symbol(currency.code()) }}</span>
+  <span>{{ currency.code() }}</span>
+</button>
+<p-menu #menu [model]="items()" [popup]="true" appendTo="body">
+  <ng-template #item let-item>
+    <a class="p-menu-item-link flex items-center gap-3">
+      <span class="w-10 font-semibold text-brand-ink">{{ item.state.code }}</span>
+      <span class="flex-1" [class.font-semibold]="item.state.active">{{ item.label }}</span>
+      @if (item.state.active) { <fa-icon [icon]="i.check" class="text-brand-500" /> }
+    </a>
+  </ng-template>
+</p-menu>

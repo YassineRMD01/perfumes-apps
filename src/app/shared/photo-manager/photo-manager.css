@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+
+.single {
+  grid-template-columns: 7rem;
+}
+
+.tile-btn {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.9);
+  color: #292524;
+  font-size: 0.75rem;
+  transition: background 0.15s;
+}
+.tile-btn:hover:not(:disabled) { background: #f59e0b; color: white; }
+.tile-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  

@@ -1,0 +1,96 @@
+<div class="mb-6">
+  <h2 class="text-4xl">{{ 'ao.title' | t }}</h2>
+  <p class="text-sm text-muted">{{ 'ao.subtitle' | t }}</p>
+</div>
+
+<div class="card overflow-hidden">
+  <p-table [value]="filtered()" dataKey="id" [paginator]="true" [rows]="10" [tableStyle]="{ 'min-width': '60rem' }" [rowHover]="true"
+           sortField="createdAt" [sortOrder]="-1">
+    <ng-template #caption>
+      <div class="flex flex-wrap items-center gap-3">
+        <p-iconfield>
+          <p-inputicon><fa-icon [icon]="i.search" class="text-faint" /></p-inputicon>
+          <input pInputText [placeholder]="'ao.search' | t" [(ngModel)]="search" />
+        </p-iconfield>
+        <p-selectbutton [options]="statusFilterOptions()" optionLabel="label" optionValue="value" [(ngModel)]="statusFilter" [allowEmpty]="false" size="small" />
+      </div>
+    </ng-template>
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="id">{{ 'dash.order' | t }} <p-sortIcon field="id" /></th>
+        <th pSortableColumn="customerName">{{ 'dash.customer' | t }} <p-sortIcon field="customerName" /></th>
+        <th pSortableColumn="createdAt">{{ 'dash.date' | t }} <p-sortIcon field="createdAt" /></th>
+        <th>{{ 'ao.items' | t }}</th>
+        <th pSortableColumn="total">{{ 'dash.total' | t }} <p-sortIcon field="total" /></th>
+        <th>{{ 'ao.payment' | t }}</th>
+        <th class="w-52">{{ 'dash.status' | t }}</th>
+        <th class="w-16"></th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-o>
+      <tr>
+        <td class="font-medium" dir="ltr">{{ o.id }}</td>
+        <td><div>{{ o.customerName }}</div><div class="text-xs text-muted">{{ o.email }}</div></td>
+        <td>{{ o.createdAt | ldate: 'datetime' }}</td>
+        <td>{{ itemCount(o) }}</td>
+        <td class="font-semibold">{{ o.total | money }}</td>
+        <td class="text-sm">{{ o.payment | tv: 'payment' }}</td>
+        <td>
+          <p-select [options]="statuses" [ngModel]="o.status" (ngModelChange)="setStatus(o, $event)" appendTo="body" size="small" class="w-full">
+            <ng-template #selectedItem let-s><p-tag [value]="s | tv: 'status'" [severity]="sevOf(s)" /></ng-template>
+            <ng-template #item let-s><p-tag [value]="s | tv: 'status'" [severity]="sevOf(s)" /></ng-template>
+          </p-select>
+        </td>
+        <td>
+          <p-button [text]="true" [rounded]="true" severity="secondary" (onClick)="selected.set(o)" [pTooltip]="'ao.view' | t" [ariaLabel]="'ao.view' | t">
+            <fa-icon [icon]="i.eye" />
+          </p-button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr><td colspan="8" class="py-10 text-center text-muted">{{ 'ao.empty' | t }}</td></tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [visible]="!!selected()" (visibleChange)="!$event && selected.set(null)" [modal]="true"
+          [header]="'ao.orderTitle' | t: { id: selected()?.id ?? '' }" [style]="{ width: '40rem' }" [breakpoints]="{ '720px': '95vw' }" [draggable]="false">
+  @if (selected(); as o) {
+    <div class="mb-4 flex flex-wrap items-center gap-3 text-sm text-muted">
+      <span>{{ o.createdAt | ldate: 'datetime' }}</span>
+      <p-tag [value]="o.status | tv: 'status'" [severity]="sev[o.status]" />
+      <span>{{ o.payment | tv: 'payment' }}</span>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="rounded-xl bg-surface-2 p-4 text-sm">
+        <div class="mb-1 font-semibold">{{ 'ao.customer' | t }}</div>
+        <div>{{ o.customerName }}</div>
+        <div class="text-muted">{{ o.email }}</div>
+        <div class="text-muted" dir="ltr">{{ o.shippingInfo.phone }}</div>
+      </div>
+      <div class="rounded-xl bg-surface-2 p-4 text-sm">
+        <div class="mb-1 font-semibold">{{ 'ao.shippingAddress' | t }}</div>
+        <div>{{ o.shippingInfo.fullName }}</div>
+        <div class="text-muted">{{ o.shippingInfo.address }}, {{ o.shippingInfo.zip }} {{ o.shippingInfo.city }}, {{ o.shippingInfo.country }}</div>
+      </div>
+    </div>
+    <ul class="mt-4 divide-y divide-line">
+      @for (it of o.items; track it.productId) {
+        <li class="flex items-center gap-3 py-3">
+          <div class="flex h-12 w-10 items-center justify-center overflow-hidden rounded bg-surface-2">
+            <app-bottle class="h-full w-full" [color]="it.color" [name]="it.name" [image]="photo(it.productId)" fit="cover" />
+          </div>
+          <div class="flex-1 text-sm"><div class="font-medium">{{ it.name }}</div><div class="text-xs text-muted">{{ it.brand }} · {{ it.qty }} × {{ it.price | money }}</div></div>
+          <div class="text-sm font-semibold">{{ it.qty * it.price | money }}</div>
+        </li>
+      }
+    </ul>
+    <dl class="mt-2 space-y-1 border-t border-line pt-3 text-sm">
+      <div class="flex justify-between"><dt class="text-muted">{{ 'common.subtotal' | t }}</dt><dd>{{ o.subtotal | money }}</dd></div>
+      <div class="flex justify-between"><dt class="text-muted">{{ 'common.shipping' | t }}</dt><dd>{{ o.shipping ? (o.shipping | money) : ('common.free' | t) }}</dd></div>
+      <div class="flex justify-between text-base font-bold"><dt>{{ 'common.total' | t }}</dt><dd>{{ o.total | money }}</dd></div>
+    </dl>
+  }
+</p-dialog>
+

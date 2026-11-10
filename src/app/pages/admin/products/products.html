@@ -1,0 +1,115 @@
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h2 class="text-4xl">{{ 'ap.title' | t }}</h2>
+    <p class="text-sm text-muted">{{ 'ap.count' | t: { n: products.products().length } }}</p>
+  </div>
+  <p-button (onClick)="openNew()"><fa-icon [icon]="i.plus" /> {{ 'ap.new' | t }}</p-button>
+</div>
+
+<div class="card overflow-hidden">
+  <p-table #dt [value]="rows()" dataKey="id" [paginator]="true" [rows]="8" [rowsPerPageOptions]="[8, 16, 32]"
+           [globalFilterFields]="['name', 'brandName', 'categoryName']" [tableStyle]="{ 'min-width': '60rem' }"
+           sortField="createdAt" [sortOrder]="-1" [rowHover]="true">
+    <ng-template #caption>
+      <p-iconfield>
+        <p-inputicon><fa-icon [icon]="i.search" class="text-faint" /></p-inputicon>
+        <input pInputText [placeholder]="'ap.search' | t" (input)="filter(dt, $event)" />
+      </p-iconfield>
+    </ng-template>
+    <ng-template #header>
+      <tr>
+        <th class="w-20"></th>
+        <th pSortableColumn="name">{{ 'ap.colPerfume' | t }} <p-sortIcon field="name" /></th>
+        <th pSortableColumn="categoryName">{{ 'ap.colFamily' | t }} <p-sortIcon field="categoryName" /></th>
+        <th pSortableColumn="gender">{{ 'ap.colFor' | t }} <p-sortIcon field="gender" /></th>
+        <th pSortableColumn="price">{{ 'ap.colPrice' | t }} <p-sortIcon field="price" /></th>
+        <th pSortableColumn="stock">{{ 'ap.colStock' | t }} <p-sortIcon field="stock" /></th>
+        <th>{{ 'ap.colFeatured' | t }}</th>
+        <th class="w-28 text-end">{{ 'ap.colActions' | t }}</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-p>
+      <tr>
+        <td>
+          <div class="relative h-14 w-12 overflow-hidden rounded-lg bg-surface-2" [class.p-1]="!p.images.length">
+            <app-bottle class="h-full w-full" [color]="p.color" [name]="p.name" [image]="p.images[0]" fit="cover" />
+            @if (p.images.length > 1) {
+              <span class="absolute bottom-0.5 end-0.5 rounded bg-black/65 px-1 text-[9px] font-semibold text-white"
+                    [pTooltip]="'ap.photosCount' | t: { n: p.images.length }">{{ p.images.length }}</span>
+            }
+          </div>
+        </td>
+        <td>
+          <div class="font-medium">{{ p.name }}</div>
+          <div class="text-xs text-muted">{{ p.brandId | brandName }} · {{ p.concentration }} {{ p.volumeMl }}ml</div>
+        </td>
+        <td>{{ p.categoryId | categoryName }}</td>
+        <td>{{ p.gender | tv: 'gender' }}</td>
+        <td>
+          {{ p.price | money }}
+          @if (p.oldPrice) { <div class="text-xs text-faint line-through">{{ p.oldPrice | money }}</div> }
+        </td>
+        <td>
+          <p-tag [value]="p.stock === 0 ? ('ap.outOfStock' | t) : ('ap.units' | t: { n: p.stock })"
+                 [severity]="p.stock === 0 ? 'danger' : p.stock <= 5 ? 'warn' : 'success'" />
+        </td>
+        <td>@if (p.featured) { <fa-icon [icon]="i.star" class="text-brand-500" /> } @else { <span class="text-faint">—</span> }</td>
+        <td class="whitespace-nowrap text-end">
+          <p-button [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'ap.edit' | t" [ariaLabel]="'ap.edit' | t" (onClick)="openEdit(p)"><fa-icon [icon]="i.edit" /></p-button>
+          <p-button [text]="true" [rounded]="true" severity="danger" [pTooltip]="'ap.delete' | t" [ariaLabel]="'ap.delete' | t" (onClick)="remove(p)"><fa-icon [icon]="i.trash" /></p-button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr><td colspan="8" class="py-10 text-center text-muted">{{ 'ap.empty' | t }}</td></tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="dialogOpen" [modal]="true" [header]="(editing() ? 'ap.editTitle' : 'ap.newTitle') | t" (onHide)="onHide()"
+          [style]="{ width: '60rem' }" [breakpoints]="{ '1024px': '95vw' }" [draggable]="false">
+  <form [formGroup]="form" (ngSubmit)="save()" id="productForm" class="grid gap-6 md:grid-cols-[200px_1fr]">
+    <div class="flex flex-col gap-3">
+      <div class="flex h-56 w-full items-center justify-center overflow-hidden rounded-xl bg-surface-2" [class.p-4]="!images().length">
+        <app-bottle class="h-full w-full" [color]="form.controls.color.value" [name]="form.controls.name.value || ('ap.name' | t)"
+                    [brand]="form.controls.brandId.value ? (form.controls.brandId.value | brandName) : ''" [image]="images()[0]" fit="cover" />
+      </div>
+      <label class="flex w-full items-center justify-between gap-2 text-sm">
+        {{ 'ap.bottleColor' | t }}
+        <input type="color" formControlName="color" class="h-8 w-12 cursor-pointer rounded border border-line" />
+      </label>
+      <p class="-mt-2 text-xs text-faint">{{ 'ap.bottleHint' | t }}</p>
+      <label class="flex w-full items-center justify-between text-sm">{{ 'ap.featured' | t }} <p-toggleswitch formControlName="featured" /></label>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="sm:col-span-2">
+        <app-photo-manager [(images)]="images" (uploaded)="uploadedThisSession.push($event)" />
+      </div>
+      <div><label class="field-label">{{ 'ap.name' | t }} *</label><input pInputText formControlName="name" class="w-full" [invalid]="bad('name')" /></div>
+      <div>
+        <label class="field-label">{{ 'ap.brand' | t }} *</label>
+        <p-select [options]="catalog.brands()" optionLabel="name" optionValue="id" formControlName="brandId" [filter]="true" filterBy="name"
+                  [placeholder]="'ap.selectBrand' | t" class="w-full" appendTo="body" [invalid]="bad('brandId')" />
+      </div>
+      <div class="sm:col-span-2"><label class="field-label">{{ 'ap.description' | t }} *</label><textarea pTextarea formControlName="description" rows="3" class="w-full" [invalid]="bad('description')"></textarea></div>
+      <div><label class="field-label">{{ 'ap.price' | t }} (USD) *</label><p-inputnumber formControlName="price" mode="currency" currency="USD" [locale]="i18n.locale()" [fluid]="true" [invalid]="bad('price')" /></div>
+      <div><label class="field-label">{{ 'ap.oldPrice' | t }} (USD)</label><p-inputnumber formControlName="oldPrice" mode="currency" currency="USD" [locale]="i18n.locale()" [fluid]="true" /></div>
+      <div><label class="field-label">{{ 'ap.stock' | t }} *</label><p-inputnumber formControlName="stock" [min]="0" [showButtons]="true" [fluid]="true" /></div>
+      <div><label class="field-label">{{ 'ap.volume' | t }} *</label><p-inputnumber formControlName="volumeMl" [min]="1" suffix=" ml" [fluid]="true" /></div>
+      <div><label class="field-label">{{ 'ap.gender' | t }}</label><p-select [options]="genderOptions()" optionLabel="label" optionValue="value" formControlName="gender" class="w-full" appendTo="body" /></div>
+      <div><label class="field-label">{{ 'ap.family' | t }} *</label><p-select [options]="categoryOptions()" optionLabel="label" optionValue="value" formControlName="categoryId" [placeholder]="'ap.selectCategory' | t" class="w-full" appendTo="body" [invalid]="bad('categoryId')" /></div>
+      <div class="sm:col-span-2"><label class="field-label">{{ 'ap.concentration' | t }}</label><p-select [options]="concentrationOptions()" optionLabel="label" optionValue="value" formControlName="concentration" class="w-full" appendTo="body" /></div>
+      <div class="grid gap-4 sm:col-span-2 sm:grid-cols-3">
+        <div><label class="field-label">{{ 'ap.topNotes' | t }}</label><input pInputText formControlName="topNotes" class="w-full" [placeholder]="'ap.notesHint' | t" /></div>
+        <div><label class="field-label">{{ 'ap.heartNotes' | t }}</label><input pInputText formControlName="heartNotes" class="w-full" [placeholder]="'ap.notesHint' | t" /></div>
+        <div><label class="field-label">{{ 'ap.baseNotes' | t }}</label><input pInputText formControlName="baseNotes" class="w-full" [placeholder]="'ap.notesHint' | t" /></div>
+      </div>
+    </div>
+  </form>
+  <ng-template #footer>
+    <p-button severity="secondary" [text]="true" (onClick)="dialogOpen.set(false)">{{ 'common.cancel' | t }}</p-button>
+    <p-button (onClick)="save()"><fa-icon [icon]="i.check" /> {{ (editing() ? 'ap.save' : 'ap.create') | t }}</p-button>
+  </ng-template>
+</p-dialog>
+

@@ -1,0 +1,16 @@
+:host {
+  display: block;
+}
+
+.monogram {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: var(--color-brand-soft);
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--color-brand-ink);
+}

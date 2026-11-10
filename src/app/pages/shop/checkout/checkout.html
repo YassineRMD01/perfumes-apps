@@ -1,0 +1,82 @@
+<div class="container-x py-10">
+  <h1 class="mb-8 text-5xl">{{ 'co.title' | t }}</h1>
+
+  @if (cart.isEmpty()) {
+    <div class="card py-16 text-center">
+      <p class="text-muted">{{ 'co.empty' | t }}</p>
+      <p-button class="mt-4 inline-block" routerLink="/shop">{{ 'co.goShopping' | t }}</p-button>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="placeOrder()" class="grid gap-8 lg:grid-cols-[1fr_380px]">
+      <div class="flex flex-col gap-6">
+        <section class="card p-6" formGroupName="shipping">
+          <h2 class="mb-5 flex items-center gap-2 text-xl font-semibold"><fa-icon [icon]="i.truck" class="text-brand-ink" /> {{ 'co.shipping' | t }}</h2>
+          <div class="grid gap-4 sm:grid-cols-2">
+            @for (f of shippingFields; track f.key) {
+              <div [class.sm:col-span-2]="f.wide">
+                <label class="field-label" [for]="f.key">{{ f.label | t }}</label>
+                <input pInputText [id]="f.key" [formControlName]="f.key" class="w-full" [invalid]="invalid('shipping.' + f.key)"
+                       [attr.dir]="f.key === 'phone' || f.key === 'zip' ? 'ltr' : null" />
+                @if (invalid('shipping.' + f.key)) { <p class="field-error">{{ 'co.required' | t: { field: (f.label | t) } }}</p> }
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="card p-6">
+          <h2 class="mb-5 flex items-center gap-2 text-xl font-semibold"><fa-icon [icon]="i.card" class="text-brand-ink" /> {{ 'co.payment' | t }}</h2>
+          <p-selectbutton [options]="paymentOptions()" formControlName="payment" optionLabel="label" optionValue="value" [allowEmpty]="false" />
+          @if (form.controls.payment.value === 'Card') {
+            <div class="mt-5 grid gap-4 sm:grid-cols-2" formGroupName="card">
+              <div class="sm:col-span-2">
+                <label class="field-label">{{ 'co.cardNumber' | t }}</label>
+                <p-inputmask mask="9999 9999 9999 9999" formControlName="number" dir="ltr" placeholder="4242 4242 4242 4242" styleClass="w-full" />
+              </div>
+              <div>
+                <label class="field-label">{{ 'co.expiry' | t }}</label>
+                <p-inputmask mask="99/99" formControlName="expiry" dir="ltr" placeholder="MM/YY" styleClass="w-full" />
+              </div>
+              <div>
+                <label class="field-label">{{ 'co.cvc' | t }}</label>
+                <p-inputmask mask="999" formControlName="cvc" dir="ltr" placeholder="123" styleClass="w-full" />
+              </div>
+              @if (submitted() && form.controls.card.invalid) {
+                <p class="field-error sm:col-span-2">{{ 'co.cardIncomplete' | t }}</p>
+              }
+              <p class="text-xs text-muted sm:col-span-2"><fa-icon [icon]="i.lock" /> {{ 'co.demoNote' | t }}</p>
+            </div>
+          } @else {
+            <p class="mt-4 text-sm text-muted"><fa-icon [icon]="i.cash" class="text-emerald-600" /> {{ 'co.codNote' | t }}</p>
+          }
+        </section>
+      </div>
+
+      <aside class="card h-fit p-6 lg:sticky lg:top-24">
+        <h2 class="mb-4 text-xl font-semibold">{{ 'co.yourOrder' | t }}</h2>
+        <ul class="mb-4 space-y-3">
+          @for (l of cart.lines(); track l.product.id) {
+            <li class="flex items-center gap-3">
+              <div class="flex h-14 w-12 items-center justify-center overflow-hidden rounded-lg bg-surface-2" [class.p-1]="!l.product.images.length">
+                <app-bottle class="h-full w-full" [color]="l.product.color" [name]="l.product.name" [brand]="l.product.brandId | brandName" [image]="l.product.images[0]" fit="cover" />
+              </div>
+              <div class="flex-1 text-sm">
+                <div class="font-medium">{{ l.product.name }}</div>
+                <div class="text-xs text-muted">{{ 'co.qty' | t: { n: l.qty } }}</div>
+              </div>
+              <div class="text-sm font-semibold">{{ l.lineTotal | money }}</div>
+            </li>
+          }
+        </ul>
+        <dl class="space-y-2 border-t border-line pt-4 text-sm">
+          <div class="flex justify-between"><dt class="text-muted">{{ 'common.subtotal' | t }}</dt><dd>{{ cart.subtotal() | money }}</dd></div>
+          <div class="flex justify-between"><dt class="text-muted">{{ 'common.shipping' | t }}</dt><dd>{{ cart.shipping() ? (cart.shipping() | money) : ('common.free' | t) }}</dd></div>
+          <div class="flex justify-between pt-2 text-lg font-bold"><dt>{{ 'common.total' | t }}</dt><dd>{{ cart.total() | money }}</dd></div>
+        </dl>
+        <p-button type="submit" size="large" styleClass="mt-6 w-full" [loading]="placing()">
+          <fa-icon [icon]="i.check" /> {{ 'co.placeOrder' | t }}
+        </p-button>
+      </aside>
+    </form>
+  }
+</div>
+

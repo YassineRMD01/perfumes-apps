@@ -1,0 +1,16 @@
+<div class="container-x py-10">
+  <h1 class="mb-8 text-5xl">{{ 'wish.title' | t }}</h1>
+  @if (wishlist.products().length) {
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      @for (p of wishlist.products(); track p.id) { <app-product-card [product]="p" /> }
+    </div>
+  } @else {
+    <div class="card flex flex-col items-center py-20 text-center">
+      <fa-icon [icon]="i.heartOutline" class="text-5xl text-faint" />
+      <h2 class="mt-4 text-2xl font-semibold">{{ 'wish.empty' | t }}</h2>
+      <p class="mt-1 text-muted">{{ 'wish.emptyText' | t }}</p>
+      <p-button class="mt-6" routerLink="/shop">{{ 'wish.explore' | t }}</p-button>
+    </div>
+  }
+</div>
+

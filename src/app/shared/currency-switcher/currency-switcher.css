@@ -1,0 +1,20 @@
+:host {
+  display: inline-block;
+}
+
+.trigger {
+  display: flex;
+  height: 2.5rem;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  padding-inline: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink);
+  transition: background-color 0.2s;
+}
+
+.trigger:hover {
+  background: var(--color-surface-2);
+}

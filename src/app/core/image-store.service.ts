@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-const DB_NAME = 'essence-images';
+const DB_NAME = 'lumora-images';
 const STORE = 'images';
 const IDB_PREFIX = 'idb:';
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;

@@ -1,0 +1,40 @@
+<div class="container-x flex justify-center py-16">
+  <div class="card w-full max-w-md p-8">
+    <div class="mb-6 text-center">
+      <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-xl text-brand-ink"><fa-icon [icon]="i.login" /></span>
+      <h1 class="mt-4 text-4xl">{{ 'login.title' | t }}</h1>
+      <p class="text-sm text-muted">{{ 'login.subtitle' | t }}</p>
+    </div>
+
+    @if (error()) { <p-message severity="error" styleClass="mb-4">{{ 'login.invalid' | t }}</p-message> }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4">
+      <div>
+        <label class="field-label" for="email">{{ 'login.email' | t }}</label>
+        <input pInputText id="email" type="email" formControlName="email" class="w-full" autocomplete="email" dir="ltr" />
+      </div>
+      <div>
+        <label class="field-label" for="password">{{ 'login.password' | t }}</label>
+        <p-password inputId="password" formControlName="password" [feedback]="false" [toggleMask]="true" [fluid]="true" />
+      </div>
+      <p-button type="submit" styleClass="w-full" [disabled]="form.invalid">{{ 'login.submit' | t }}</p-button>
+    </form>
+
+    <div class="mt-6 rounded-xl border border-dashed border-brand-400 bg-brand-soft p-4 text-sm">
+      <div class="mb-2 font-semibold text-brand-ink">{{ 'login.demo' | t }}</div>
+      <div class="flex flex-col gap-2 sm:flex-row">
+        <p-button size="small" severity="contrast" [outlined]="true" styleClass="w-full" (onClick)="fill('admin@lumora.shop', 'admin123')">
+          <fa-icon [icon]="i.shield" /> {{ 'login.admin' | t }}
+        </p-button>
+        <p-button size="small" severity="contrast" [outlined]="true" styleClass="w-full" (onClick)="fill('client@lumora.shop', 'client123')">
+          <fa-icon [icon]="i.user" /> {{ 'login.client' | t }}
+        </p-button>
+      </div>
+    </div>
+
+    <p class="mt-6 text-center text-sm text-muted">
+      {{ 'login.new' | t }} <a routerLink="/register" [queryParams]="{ returnUrl: returnUrl() }" class="font-semibold text-brand-ink hover:underline">{{ 'login.create' | t }}</a>
+    </p>
+  </div>
+</div>
+

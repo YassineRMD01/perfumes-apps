@@ -1,0 +1,100 @@
+<div class="border-b border-line soft-glow">
+  <div class="container-x py-10">
+    <p class="eyebrow">{{ 'title.shop' | t }}</p>
+    <h1 class="mt-1 text-5xl">{{ title() }}</h1>
+    <p class="mt-2 text-muted">{{ 'shop.count' | t: { n: filtered().length } }}</p>
+  </div>
+</div>
+
+<ng-template #filtersTpl>
+  <div class="flex flex-col gap-7">
+    <div>
+      <label class="field-label">{{ 'shop.search' | t }}</label>
+      <p-iconfield>
+        <p-inputicon><fa-icon [icon]="i.search" class="text-faint" /></p-inputicon>
+        <input pInputText [(ngModel)]="search" [placeholder]="'shop.searchPlaceholder' | t" class="w-full" />
+      </p-iconfield>
+    </div>
+    <div>
+      <label class="field-label">{{ 'shop.for' | t }}</label>
+      <div class="flex flex-wrap gap-2" role="radiogroup">
+        @for (o of genderOptions(); track o.value) {
+          <button type="button" role="radio" class="chip" [class.selected]="gender() === o.value"
+                  [attr.aria-checked]="gender() === o.value" (click)="gender.set(o.value)">{{ o.label }}</button>
+        }
+      </div>
+    </div>
+    <div>
+      <label class="field-label">{{ 'shop.family' | t }}</label>
+      <div class="grid grid-cols-2 gap-2">
+        @for (c of catalog.categories(); track c.id) {
+          <label class="flex cursor-pointer items-center gap-2 text-sm">
+            <p-checkbox [value]="c.id" [(ngModel)]="selectedCategories" />{{ c.id | categoryName }}
+          </label>
+        }
+      </div>
+    </div>
+    <div>
+      <label class="field-label">{{ 'shop.brand' | t }}</label>
+      <p-multiselect [options]="catalog.brands()" optionLabel="name" optionValue="id" [(ngModel)]="selectedBrands" [filter]="true" [placeholder]="'shop.allBrands' | t" display="chip"
+                     class="w-full" appendTo="body" [showToggleAll]="false" />
+    </div>
+    <div>
+      <div class="mb-3 flex justify-between text-sm">
+        <span class="font-medium text-ink">{{ 'shop.price' | t }}</span>
+        <span class="text-muted" dir="ltr">{{ price()[0] | money: true }} – {{ price()[1] | money: true }}</span>
+      </div>
+      <p-slider dir="ltr" [(ngModel)]="price" [range]="true" [min]="0" [max]="products.maxPrice()" [step]="5" class="mx-2 block" />
+    </div>
+    <label class="flex items-center justify-between text-sm font-medium text-ink">
+      {{ 'shop.inStock' | t }} <p-toggleswitch [(ngModel)]="inStockOnly" />
+    </label>
+    <p-button severity="secondary" [outlined]="true" (onClick)="resetFilters()" styleClass="w-full">
+      <fa-icon [icon]="i.reset" /> {{ 'shop.reset' | t }}
+    </p-button>
+  </div>
+</ng-template>
+
+<p-drawer [(visible)]="filtersOpen" [header]="'shop.filters' | t" styleClass="!w-80" [position]="i18n.isRtl() ? 'right' : 'left'">
+  <ng-container *ngTemplateOutlet="filtersTpl" />
+</p-drawer>
+
+<div class="container-x grid gap-8 py-10 lg:grid-cols-[260px_1fr]">
+  <aside class="hidden lg:block">
+    <div class="card sticky top-24 p-5">
+      <ng-container *ngTemplateOutlet="filtersTpl" />
+    </div>
+  </aside>
+
+  <section>
+    <div class="mb-6 flex items-center justify-between gap-3">
+      <p-button class="lg:hidden" severity="secondary" [outlined]="true" (onClick)="filtersOpen.set(true)">
+        <fa-icon [icon]="i.filter" /> {{ 'shop.filters' | t }}
+      </p-button>
+      <div class="ms-auto flex items-center gap-2">
+        <span class="hidden text-sm text-muted sm:inline">{{ 'shop.sortBy' | t }}</span>
+        <p-select [options]="sortOptions()" [(ngModel)]="sort" optionLabel="label" optionValue="value" class="w-56" />
+      </div>
+    </div>
+
+    @if (paged().length) {
+      <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        @for (p of paged(); track p.id) {
+          <app-product-card [product]="p" />
+        }
+      </div>
+      @if (filtered().length > rows()) {
+        <p-paginator class="mt-8 block" dir="ltr" [first]="first()" [rows]="rows()" [totalRecords]="filtered().length"
+                     [rowsPerPageOptions]="[6, 9, 12, 24]" (onPageChange)="onPage($event)" />
+      }
+    } @else {
+      <div class="card flex flex-col items-center py-20 text-center">
+        <fa-icon [icon]="i.search" class="text-4xl text-faint" />
+        <h3 class="mt-4 text-xl font-semibold">{{ 'shop.noResults' | t }}</h3>
+        <p class="mt-1 text-sm text-muted">{{ 'shop.noResultsText' | t }}</p>
+        <p-button class="mt-6" (onClick)="resetFilters()">{{ 'shop.reset' | t }}</p-button>
+      </div>
+    }
+  </section>
+</div>
+

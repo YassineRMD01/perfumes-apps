@@ -1,0 +1,15 @@
+<button type="button" (click)="menu.toggle($event)"
+        class="flex h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-ink hover:bg-surface-2"
+        [attr.aria-label]="i18n.t('common.language')" aria-haspopup="true">
+  <fa-icon [icon]="i.globe" class="text-base" />
+  <span>{{ i18n.option().short }}</span>
+</button>
+<p-menu #menu [model]="items()" [popup]="true" appendTo="body">
+  <ng-template #item let-item>
+    <a class="p-menu-item-link flex items-center justify-between gap-8" [attr.lang]="item.state.code">
+      <span [class.font-semibold]="item.state.active">{{ item.label }}</span>
+      @if (item.state.active) { <fa-icon [icon]="i.check" class="text-brand-500" /> }
+    </a>
+  </ng-template>
+</p-menu>
+

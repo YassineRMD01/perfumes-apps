@@ -3,7 +3,7 @@ import {
   faChartLine, faCheck, faCircleCheck, faCreditCard, faEye, faFilter, faGauge, faGem, faHeart as faHeartSolid,
   faLeaf, faLock, faMagnifyingGlass, faMinus, faMoneyBillWave, faPen, faPlus, faReceipt, faRightFromBracket,
   faRightToBracket, faRotateLeft, faShieldHalved, faSprayCanSparkles, faStar, faStore, faTrash, faTriangleExclamation,
-  faTruckFast, faUser, faUserPlus, faUsers, faXmark, faFire, faWandMagicSparkles, faDroplet, faGlobe, faImage, faCloudArrowUp, faChevronLeft, faChevronRight, faLink, faSpinner,
+  faTruckFast, faUser, faUserPlus, faUsers, faXmark, faFire, faWandMagicSparkles, faDroplet, faGlobe, faImage, faCloudArrowUp, faChevronLeft, faChevronRight, faLink, faSpinner, faMoon, faSun, faCoins, faTags, faLayerGroup, faGear, faCrown,
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import { faFacebookF, faInstagram, faPinterestP, faTiktok } from '@fortawesome/free-brands-svg-icons';
@@ -60,6 +60,13 @@ export const Icons = {
   chevronRight: faChevronRight,
   link: faLink,
   spinner: faSpinner,
+  moon: faMoon,
+  sun: faSun,
+  coins: faCoins,
+  tags: faTags,
+  layers: faLayerGroup,
+  gear: faGear,
+  crown: faCrown,
   facebook: faFacebookF,
   instagram: faInstagram,
   pinterest: faPinterestP,

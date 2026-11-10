@@ -1,0 +1,76 @@
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h2 class="text-4xl">{{ 'ab.title' | t }}</h2>
+    <p class="text-sm text-muted">{{ 'ab.subtitle' | t }}</p>
+  </div>
+  <p-button (onClick)="open(null)"><fa-icon [icon]="i.plus" /> {{ 'ab.new' | t }}</p-button>
+</div>
+
+<div class="card overflow-hidden">
+  <p-table #dt [value]="rows()" dataKey="id" [globalFilterFields]="['name', 'country']" [tableStyle]="{ 'min-width': '44rem' }"
+           sortField="name" [rowHover]="true">
+    <ng-template #caption>
+      <p-iconfield>
+        <p-inputicon><fa-icon [icon]="i.search" class="text-faint" /></p-inputicon>
+        <input pInputText [placeholder]="'ab.search' | t" (input)="filter(dt, $event)" />
+      </p-iconfield>
+    </ng-template>
+    <ng-template #header>
+      <tr>
+        <th class="w-20">{{ 'ab.logo' | t }}</th>
+        <th pSortableColumn="name">{{ 'ab.name' | t }} <p-sortIcon field="name" /></th>
+        <th pSortableColumn="country">{{ 'ab.country' | t }} <p-sortIcon field="country" /></th>
+        <th pSortableColumn="count">{{ 'ab.products' | t }} <p-sortIcon field="count" /></th>
+        <th class="w-28 text-end">{{ 'common.actions' | t }}</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-b>
+      <tr>
+        <td>
+          @if (b.logoSrc) {
+            <img [src]="b.logoSrc" alt="" class="h-11 w-11 rounded-xl object-cover" />
+          } @else {
+            <span class="monogram">{{ b.name[0] }}</span>
+          }
+        </td>
+        <td>
+          <div class="font-medium">{{ b.name }}</div>
+          <div class="line-clamp-1 max-w-md text-xs text-muted">{{ b.description }}</div>
+        </td>
+        <td>{{ b.country || '—' }}</td>
+        <td><p-tag [value]="'common.products' | t: { n: b.count }" [severity]="b.count ? 'secondary' : 'warn'" /></td>
+        <td class="whitespace-nowrap text-end">
+          <p-button [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'common.edit' | t" [ariaLabel]="'common.edit' | t" (onClick)="open(b)"><fa-icon [icon]="i.edit" /></p-button>
+          <p-button [text]="true" [rounded]="true" severity="danger" [pTooltip]="'common.delete' | t" [ariaLabel]="'common.delete' | t" (onClick)="remove(b)"><fa-icon [icon]="i.trash" /></p-button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr><td colspan="5" class="py-10 text-center text-muted">{{ 'ab.empty' | t }}</td></tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="dialogOpen" [modal]="true" [header]="(editing() ? 'ab.editTitle' : 'ab.newTitle') | t" (onHide)="onHide()"
+          [style]="{ width: '34rem' }" [breakpoints]="{ '640px': '95vw' }" [draggable]="false">
+  <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
+    <div>
+      <label class="field-label" for="brand-name">{{ 'ab.name' | t }} *</label>
+      <input pInputText id="brand-name" formControlName="name" class="w-full" [invalid]="form.controls.name.invalid && form.controls.name.touched" />
+    </div>
+    <div>
+      <label class="field-label" for="brand-country">{{ 'ab.country' | t }}</label>
+      <input pInputText id="brand-country" formControlName="country" class="w-full" />
+    </div>
+    <div>
+      <label class="field-label" for="brand-desc">{{ 'ab.description' | t }}</label>
+      <textarea pTextarea id="brand-desc" formControlName="description" rows="3" class="w-full"></textarea>
+    </div>
+    <app-photo-manager [(images)]="logo" [max]="1" [label]="'ab.logo' | t" [hint]="'set.logoHint' | t" (uploaded)="onUploaded($event)" />
+    <button type="submit" class="hidden"></button>
+  </form>
+  <ng-template #footer>
+    <p-button severity="secondary" [text]="true" (onClick)="dialogOpen.set(false)">{{ 'common.cancel' | t }}</p-button>
+    <p-button (onClick)="save()"><fa-icon [icon]="i.check" /> {{ 'common.save' | t }}</p-button>
+  </ng-template>
+</p-dialog>

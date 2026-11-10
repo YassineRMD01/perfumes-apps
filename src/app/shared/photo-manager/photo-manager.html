@@ -1,0 +1,64 @@
+<div class="mb-2 flex items-center justify-between">
+  <span class="field-label !mb-0">{{ label() ?? ('ap.photos' | t: { n: images().length, max: max() }) }}</span>
+  @if (busy()) {
+    <span class="text-xs text-brand-ink"><fa-icon [icon]="i.spinner" animation="spin" /> {{ 'ap.processing' | t }}</span>
+  }
+</div>
+
+<div class="grid gap-2" [class.grid-cols-3]="max() > 1" [class.sm:grid-cols-5]="max() > 1" [class.single]="max() === 1">
+  @for (ref of images(); track ref; let idx = $index; let first = $first; let last = $last) {
+    <div class="group relative aspect-square overflow-hidden rounded-xl border border-line bg-surface-2">
+      @if (store.resolve(ref); as src) {
+        <img [src]="src" alt="" class="h-full w-full object-cover" />
+      } @else {
+        <div class="grid h-full place-items-center text-faint"><fa-icon [icon]="i.image" /></div>
+      }
+      @if (first) {
+        <span class="absolute start-1.5 top-1.5 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold text-white">{{ 'ap.cover' | t }}</span>
+      }
+      <div class="absolute inset-x-0 bottom-0 flex justify-center gap-1 bg-gradient-to-t from-black/70 to-transparent p-1.5 pt-6
+                  opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+        <button type="button" class="tile-btn" [disabled]="first" (click)="move(idx, -1)" [pTooltip]="'ap.moveBack' | t" tooltipPosition="top"
+                [attr.aria-label]="'ap.moveBack' | t">
+          <fa-icon [icon]="i.chevronLeft" class="rtl:-scale-x-100" />
+        </button>
+        @if (!first) {
+          <button type="button" class="tile-btn" (click)="makeCover(idx)" [pTooltip]="'ap.makeCover' | t" tooltipPosition="top"
+                  [attr.aria-label]="'ap.makeCover' | t">
+            <fa-icon [icon]="i.star" />
+          </button>
+        }
+        <button type="button" class="tile-btn" [disabled]="last" (click)="move(idx, 1)" [pTooltip]="'ap.moveForward' | t" tooltipPosition="top"
+                [attr.aria-label]="'ap.moveForward' | t">
+          <fa-icon [icon]="i.chevronRight" class="rtl:-scale-x-100" />
+        </button>
+        <button type="button" class="tile-btn hover:!bg-red-600" (click)="remove(idx)" [pTooltip]="'ap.removePhoto' | t" tooltipPosition="top"
+                [attr.aria-label]="'ap.removePhoto' | t">
+          <fa-icon [icon]="i.trash" />
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (images().length < max()) {
+    <label class="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed p-2 text-center text-xs transition"
+           [class.border-brand-400]="dragOver()" [class.bg-brand-soft]="dragOver()" [class.border-line]="!dragOver()"
+           [class.text-muted]="!dragOver()" [class.text-brand-ink]="dragOver()"
+           (dragover)="$event.preventDefault(); dragOver.set(true)" (dragleave)="dragOver.set(false)" (drop)="onDrop($event)">
+      <fa-icon [icon]="i.upload" class="text-xl" />
+      <span class="font-medium">{{ 'ap.addPhoto' | t }}</span>
+      <span class="hidden text-[10px] leading-tight sm:block">{{ 'ap.dropHere' | t }}</span>
+      <input type="file" accept="image/*" multiple class="sr-only" (change)="onPick($event)" [disabled]="busy()" />
+    </label>
+  }
+</div>
+
+<div class="mt-2 flex gap-2">
+  <input pInputText type="url" [(ngModel)]="url" [placeholder]="'ap.urlPlaceholder' | t" class="min-w-0 flex-1" dir="ltr"
+         [disabled]="images().length >= max()" (keydown.enter)="$event.preventDefault(); addUrl()" />
+  <p-button severity="secondary" [outlined]="true" (onClick)="addUrl()" [disabled]="!url.trim() || images().length >= max()">
+    <fa-icon [icon]="i.link" /> {{ 'ap.addUrl' | t }}
+  </p-button>
+</div>
+<p class="mt-1 text-xs text-muted">{{ hint() ?? ('ap.photoHint' | t) }}</p>
+

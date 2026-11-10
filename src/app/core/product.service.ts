@@ -7,20 +7,13 @@ import { load, persist } from './storage';
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private readonly imageStore = inject(ImageStore);
-  private readonly _products = signal<Perfume[]>(
-    // Migrate data saved by older versions (single optional imageUrl → images[])
-    load<(Perfume & { imageUrl?: string | null })[]>('products', SEED_PRODUCTS).map(({ imageUrl, ...p }) => ({
-      ...p,
-      images: p.images ?? (imageUrl ? [imageUrl] : []),
-    })),
-  );
+  private readonly _products = signal<Perfume[]>(load('products', SEED_PRODUCTS));
 
   readonly products = this._products.asReadonly();
   readonly featured = computed(() => this._products().filter((p) => p.featured));
   readonly newArrivals = computed(() =>
     [...this._products()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 4),
   );
-  readonly brands = computed(() => [...new Set(this._products().map((p) => p.brand))].sort());
   readonly maxPrice = computed(() => Math.ceil(Math.max(0, ...this._products().map((p) => p.price)) / 10) * 10);
   readonly lowStock = computed(() => this._products().filter((p) => p.stock <= 5).sort((a, b) => a.stock - b.stock));
 
@@ -50,6 +43,14 @@ export class ProductService {
     const product = this.getById(id);
     this._products.update((list) => list.filter((p) => p.id !== id));
     if (product) this.imageStore.remove(product.images);
+  }
+
+  countByBrand(brandId: number): number {
+    return this._products().filter((p) => p.brandId === brandId).length;
+  }
+
+  countByCategory(categoryId: string): number {
+    return this._products().filter((p) => p.categoryId === categoryId).length;
   }
 
   /** Resolved cover photo (or null to render the SVG bottle). */

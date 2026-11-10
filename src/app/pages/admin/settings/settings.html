@@ -1,0 +1,106 @@
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h2 class="text-4xl">{{ 'set.title' | t }}</h2>
+    <p class="text-sm text-muted">{{ 'set.subtitle' | t }}</p>
+  </div>
+  <div class="flex items-center gap-2">
+    @if (dirty()) { <span class="text-xs font-medium text-brand-ink">{{ 'set.unsaved' | t }}</span> }
+    <p-button severity="secondary" [text]="true" (onClick)="reset()"><fa-icon [icon]="i.reset" /> {{ 'set.reset' | t }}</p-button>
+    <p-button (onClick)="save()" [disabled]="!dirty()"><fa-icon [icon]="i.check" /> {{ 'common.save' | t }}</p-button>
+  </div>
+</div>
+
+<div class="grid gap-6 xl:grid-cols-[1fr_22rem]">
+  <div class="flex flex-col gap-6">
+    <!-- Brand identity -->
+    <section class="card p-6">
+      <h3 class="section-heading"><fa-icon [icon]="i.crown" /> {{ 'set.branding' | t }}</h3>
+      <div class="grid gap-6 md:grid-cols-[1fr_auto]">
+        <div class="flex flex-col gap-5">
+          <div>
+            <label class="field-label" for="store-name">{{ 'set.storeName' | t }}</label>
+            <input pInputText id="store-name" class="w-full max-w-sm" [ngModel]="draft().storeName" (ngModelChange)="patch({ storeName: $event })" maxlength="32" />
+          </div>
+          <div>
+            <div class="field-label">{{ 'set.accent' | t }}</div>
+            <p class="mb-3 text-xs text-muted">{{ 'set.accentHint' | t }}</p>
+            <div class="flex flex-wrap items-center gap-3">
+              @for (p of presets; track p.key) {
+                <button type="button" class="swatch" [style.background]="p.color" [class.swatch--active]="draft().accent === p.color"
+                        (click)="patch({ accent: p.color })" [attr.aria-label]="p.key | tv: 'accent'" [title]="p.key | tv: 'accent'">
+                  @if (draft().accent === p.color) { <fa-icon [icon]="i.check" /> }
+                </button>
+              }
+              <label class="custom-swatch" [class.swatch--active]="isCustomAccent()" [title]="'set.custom' | t">
+                <input type="color" [ngModel]="draft().accent" (ngModelChange)="patch({ accent: $event })" />
+                <span>{{ 'set.custom' | t }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="w-full md:w-56">
+          <app-photo-manager [(images)]="logo" [max]="1" [label]="'set.logo' | t" [hint]="'set.logoHint' | t" (uploaded)="onUploaded($event)" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Currencies & shipping -->
+    <section class="card p-6">
+      <h3 class="section-heading"><fa-icon [icon]="i.coins" /> {{ 'set.commerce' | t }}</h3>
+      <div class="flex flex-col gap-6">
+        <div>
+          <div class="field-label">{{ 'set.defaultCurrency' | t }}</div>
+          <p-selectbutton [options]="currencyOptions()" optionLabel="label" optionValue="value" [allowEmpty]="false"
+                          [ngModel]="draft().defaultCurrency" (ngModelChange)="patch({ defaultCurrency: $event })" />
+        </div>
+        <div>
+          <div class="field-label">{{ 'set.rates' | t }}</div>
+          <p class="mb-3 text-xs text-muted">{{ 'set.ratesHint' | t }}</p>
+          <div class="grid gap-3 sm:grid-cols-3">
+            @for (c of otherCurrencies; track c) {
+              <label class="rate">
+                <span class="text-xs text-muted" dir="ltr">1 USD = {{ c }}</span>
+                <p-inputnumber [ngModel]="draft().rates[c]" (ngModelChange)="setRate(c, $event)" [minFractionDigits]="2" [maxFractionDigits]="4"
+                               [min]="0.0001" [fluid]="true" [locale]="i18n.locale()" />
+                <span class="text-xs text-faint">{{ c | tv: 'cur' }}</span>
+              </label>
+            }
+          </div>
+        </div>
+        <div class="max-w-xs">
+          <label class="field-label" for="free-ship">{{ 'set.freeShipping' | t }}</label>
+          <p-inputnumber inputId="free-ship" [ngModel]="draft().freeShippingThreshold" (ngModelChange)="patch({ freeShippingThreshold: $event ?? 0 })"
+                         mode="currency" currency="USD" [locale]="i18n.locale()" [min]="0" [fluid]="true" />
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Live preview with the draft accent -->
+  <aside class="card h-fit p-6 xl:sticky xl:top-24">
+    <div class="eyebrow mb-4">{{ 'set.preview' | t }}</div>
+    <div class="preview" [style.--p100]="previewPalette()[100]" [style.--p300]="previewPalette()[300]"
+         [style.--p500]="previewPalette()[500]" [style.--p600]="previewPalette()[600]" [style.--p700]="previewPalette()[700]">
+      <div class="flex items-center gap-2" dir="ltr">
+        @if (logo().length) {
+          <span class="preview-logo-img" [style.background-image]="'url(' + images.resolve(logo()[0]) + ')'"></span>
+        } @else {
+          <span class="preview-mark"></span>
+        }
+        <span class="preview-name">{{ draft().storeName || 'Lumora' }}</span>
+      </div>
+      <div class="preview-card">
+        <span class="preview-eyebrow">Maison Lumière</span>
+        <span class="font-display text-xl">Rose Éternelle</span>
+        <div class="mt-3 flex items-center justify-between">
+          <span class="font-semibold">$128.00</span>
+          <span class="preview-btn">{{ 'pd.addToCart' | t }}</span>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <span class="preview-chip">{{ 'nav.women' | t }}</span>
+        <span class="preview-chip preview-chip--on">{{ 'shop.all' | t }}</span>
+      </div>
+    </div>
+  </aside>
+</div>

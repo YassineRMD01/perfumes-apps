@@ -1,0 +1,141 @@
+<div class="flex min-h-screen flex-col">
+  <div class="announce">
+    <fa-icon [icon]="i.truck" class="me-2" />
+    {{ 'announce' | t: { amount: (cart.freeShippingThreshold() | money: true) } }}
+  </div>
+
+  <header class="header">
+    <div class="container-x flex h-[4.5rem] items-center gap-3">
+      <button class="icon-btn lg:hidden" (click)="mobileOpen.set(true)" [attr.aria-label]="'nav.openMenu' | t">
+        <fa-icon [icon]="i.bars" />
+      </button>
+
+      <a routerLink="/" [attr.aria-label]="'nav.home' | t"><app-logo /></a>
+
+      <nav class="ms-8 hidden items-center gap-7 lg:flex">
+        @for (l of links; track l.label) {
+          <a class="nav-link" [routerLink]="l.path" [queryParams]="l.query" routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }">{{ l.label | t }}</a>
+        }
+      </nav>
+
+      <form class="ms-auto hidden xl:block" (ngSubmit)="search()">
+        <p-iconfield>
+          <p-inputicon><fa-icon [icon]="i.search" class="text-faint" /></p-inputicon>
+          <input pInputText name="q" [(ngModel)]="query" [placeholder]="'nav.search' | t" class="w-60" />
+        </p-iconfield>
+      </form>
+
+      <div class="ms-auto flex items-center gap-0.5 xl:ms-2">
+        <div class="hidden items-center md:flex">
+          <app-language-switcher />
+          <app-currency-switcher />
+          <app-theme-toggle />
+        </div>
+        <a routerLink="/wishlist" class="icon-btn" [attr.aria-label]="'nav.wishlist' | t">
+          <fa-icon [icon]="i.heartOutline" />
+          @if (wishlist.count()) {
+            <p-badge [value]="wishlist.count()" class="absolute -end-0.5 -top-0.5" />
+          }
+        </a>
+        <a routerLink="/cart" class="icon-btn" [attr.aria-label]="'nav.cart' | t">
+          <fa-icon [icon]="i.bag" />
+          @if (cart.count()) {
+            <p-badge [value]="cart.count()" class="absolute -end-0.5 -top-0.5" />
+          }
+        </a>
+
+        @if (auth.currentUser(); as user) {
+          <button class="user-btn" (click)="userMenu.toggle($event)">
+            <p-avatar [label]="initials()" shape="circle" class="!bg-brand-soft !text-brand-ink" />
+            <span class="hidden text-sm font-medium sm:inline">{{ user.name.split(' ')[0] }}</span>
+          </button>
+          <p-menu #userMenu [model]="menuItems()" [popup]="true" appendTo="body" />
+        } @else {
+          <p-button routerLink="/login" size="small" [outlined]="true" class="ms-1">
+            <fa-icon [icon]="i.user" /><span class="hidden sm:inline">{{ 'nav.signIn' | t }}</span>
+          </p-button>
+        }
+      </div>
+    </div>
+  </header>
+
+  <p-drawer [(visible)]="mobileOpen" styleClass="!w-80" [position]="i18n.isRtl() ? 'right' : 'left'">
+    <ng-template #header><app-logo size="sm" /></ng-template>
+    <form class="mb-6" (ngSubmit)="search(); mobileOpen.set(false)">
+      <p-iconfield>
+        <p-inputicon><fa-icon [icon]="i.search" class="text-faint" /></p-inputicon>
+        <input pInputText name="qm" [(ngModel)]="query" [placeholder]="'nav.search' | t" class="w-full" />
+      </p-iconfield>
+    </form>
+    <nav class="flex flex-col gap-4">
+      @for (l of links; track l.label) {
+        <a class="nav-link text-base" [routerLink]="l.path" [queryParams]="l.query" (click)="mobileOpen.set(false)">{{ l.label | t }}</a>
+      }
+      @if (auth.isAdmin()) {
+        <a class="nav-link text-base" routerLink="/admin" (click)="mobileOpen.set(false)">{{ 'nav.adminPanel' | t }}</a>
+      }
+    </nav>
+
+    <div class="drawer-section">
+      <div class="drawer-title"><fa-icon [icon]="i.globe" /> {{ 'common.language' | t }}</div>
+      <div class="grid grid-cols-2 gap-2">
+        @for (l of languages; track l.code) {
+          <button type="button" class="chip" [class.selected]="l.code === i18n.lang()" (click)="i18n.use(l.code)" [attr.lang]="l.code">{{ l.label }}</button>
+        }
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-title"><fa-icon [icon]="i.coins" /> {{ 'pref.currency' | t }}</div>
+      <div class="grid grid-cols-4 gap-2">
+        @for (c of currencies; track c) {
+          <button type="button" class="chip" [class.selected]="c === currency.code()" (click)="currency.use(c)">{{ c }}</button>
+        }
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-title"><fa-icon [icon]="theme.isDark() ? i.moon : i.sun" /> {{ 'pref.theme' | t }}</div>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" class="chip" [class.selected]="!theme.isDark()" (click)="theme.mode.set('light')"><fa-icon [icon]="i.sun" /> {{ 'pref.light' | t }}</button>
+        <button type="button" class="chip" [class.selected]="theme.isDark()" (click)="theme.mode.set('dark')"><fa-icon [icon]="i.moon" /> {{ 'pref.dark' | t }}</button>
+      </div>
+    </div>
+  </p-drawer>
+
+  <main class="flex-1">
+    <router-outlet />
+  </main>
+
+  <footer class="footer">
+    <div class="container-x grid gap-10 py-14 md:grid-cols-4">
+      <div class="md:col-span-2">
+        <app-logo [withTagline]="true" />
+        <p class="mt-4 max-w-sm text-sm text-muted">{{ 'footer.tagline' | t }}</p>
+        <div class="mt-5 flex gap-2">
+          @for (s of socials; track $index) {
+            <a href="#" class="social"><fa-icon [icon]="s" /></a>
+          }
+        </div>
+      </div>
+      <div>
+        <h4 class="footer-title">{{ 'footer.shop' | t }}</h4>
+        <ul class="space-y-2 text-sm text-muted">
+          <li><a routerLink="/shop" [queryParams]="{ gender: 'Women' }" class="hover:text-brand-ink">{{ 'nav.women' | t }}</a></li>
+          <li><a routerLink="/shop" [queryParams]="{ gender: 'Men' }" class="hover:text-brand-ink">{{ 'nav.men' | t }}</a></li>
+          <li><a routerLink="/shop" [queryParams]="{ gender: 'Unisex' }" class="hover:text-brand-ink">{{ 'nav.unisex' | t }}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-title">{{ 'footer.account' | t }}</h4>
+        <ul class="space-y-2 text-sm text-muted">
+          <li><a routerLink="/orders" class="hover:text-brand-ink">{{ 'nav.myOrders' | t }}</a></li>
+          <li><a routerLink="/wishlist" class="hover:text-brand-ink">{{ 'nav.wishlist' | t }}</a></li>
+          <li><a routerLink="/cart" class="hover:text-brand-ink">{{ 'nav.cart' | t }}</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-line py-5 text-center text-xs text-faint">
+      {{ 'footer.rights' | t: { year } }}
+    </div>
+  </footer>
+</div>
