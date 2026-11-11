@@ -21,7 +21,8 @@ import { ImageStore } from '../../../core/image-store.service';
 import { CatalogService } from '../../../core/catalog.service';
 import { downloadCsv } from '../../../core/csv';
 import {
-  CONCENTRATIONS, Concentration, GENDERS, Gender, LONGEVITIES, Longevity, MAX_PHOTOS, PACKAGINGS, Packaging, Product, ProductInput, ProductKind,
+  CONCENTRATIONS, Concentration, DECANT_SIZES, GENDERS, Gender, LONGEVITIES, Longevity, MAX_PHOTOS, PACKAGINGS, Packaging, Product, ProductInput, ProductKind,
+  Variant, variantId,
   SEASONS, Season, SizeUnit, SKIN_TYPES, SkinType, TIMES_OF_DAY, TimeOfDay,
 } from '../../../core/models';
 import { ProductService } from '../../../core/product.service';
@@ -32,6 +33,21 @@ import { WearGuide } from '../../../shared/wear-guide/wear-guide';
 import { SEASON_ICONS } from '../../../shared/wear-icons';
 
 const splitNotes = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean);
+
+interface SizeRow {
+  size: number | null;
+  unit: SizeUnit;
+  price: number | null;
+  oldPrice: number | null;
+  stock: number | null;
+}
+
+interface DecantRow {
+  size: number;
+  enabled: boolean;
+  price: number | null;
+  stock: number | null;
+}
 
 @Component({
   selector: 'app-admin-products',
@@ -95,11 +111,6 @@ export class AdminProducts {
     name: ['', Validators.required],
     brandId: this.fb.control<number | null>(null, Validators.required),
     description: ['', Validators.required],
-    price: this.fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
-    oldPrice: this.fb.control<number | null>(null),
-    stock: [0, [Validators.required, Validators.min(0)]],
-    volumeMl: [100, [Validators.required, Validators.min(0.1)]],
-    unit: this.fb.control<SizeUnit>('ml'),
     gender: this.fb.control<Gender>('Unisex'),
     categoryId: this.fb.control<string | null>(null, Validators.required),
     concentration: this.fb.control<Concentration>('EDP'),
@@ -117,6 +128,10 @@ export class AdminProducts {
     baseNotes: [''],
   });
 
+  protected hasDecants(p: Product): boolean {
+    return p.variants.some((v) => v.type === 'decant');
+  }
+
   toggleSkin(skin: SkinType): void {
     const c = this.form.controls.skinTypes;
     c.setValue(SKIN_TYPES.filter((s) => (s === skin ? !c.value.includes(s) : c.value.includes(s))));
@@ -133,11 +148,11 @@ export class AdminProducts {
   exportCsv(): void {
     downloadCsv(
       `products-${new Date().toISOString().slice(0, 10)}.csv`,
-      ['ID', 'Type', 'Name', 'Brand', 'Category', 'Gender', 'Concentration', 'Size', 'Unit', 'Price (USD)', 'Compare-at (USD)', 'Stock',
+      ['ID', 'Type', 'Name', 'Brand', 'Category', 'Gender', 'Concentration', 'Sizes: size price (stock)', 'Unit', 'From (USD)', 'Compare-at (USD)', 'Total stock',
        'Longevity', 'Seasons', 'Day/Night', 'Skin types', 'Ingredients', 'Featured', 'Photos', 'Created'],
       this.rows().map((p) => [
         p.id, p.kind, p.name, p.brandName, this.catalog.categoryName(p.categoryId, 'en'), p.gender, p.kind === 'perfume' ? p.concentration : '',
-        p.volumeMl, p.unit, p.price, p.oldPrice ?? '', p.stock,
+        p.variants.map((v) => `${v.size}${v.unit}${v.type === 'decant' ? ' decant' : ''} $${v.price} (${v.stock})`).join(' | '), p.unit, p.price, p.oldPrice ?? '', p.stock,
         ...(p.kind === 'perfume' ? [p.longevity, p.seasons.join(' / '), p.timeOfDay, '', ''] : ['', '', '', p.skinTypes.join(' / '), p.ingredients.join(' / ')]),
         p.featured ? 'yes' : 'no', p.images.length, p.createdAt.slice(0, 10),
       ]),
@@ -167,8 +182,70 @@ export class AdminProducts {
     return c.invalid && c.touched;
   }
 
+  // ---- Sizes editor ----
+  /** Full sizes (any number, customizable) */
+  protected bottleRows: SizeRow[] = [];
+  /** The fixed decant sizes, each can be switched on with its own price and stock (perfumes only) */
+  protected decantRows: DecantRow[] = [];
+  protected readonly sizesError = signal('');
+
+  private loadSizes(p: Product | null, kind: ProductKind): void {
+    const bottles = p?.variants.filter((v) => v.type === 'bottle') ?? [];
+    this.bottleRows = bottles.length
+      ? bottles.map((v) => ({ size: v.size, unit: v.unit, price: v.price, oldPrice: v.oldPrice ?? null, stock: v.stock }))
+      : [{ size: kind === 'perfume' ? 100 : 50, unit: 'ml', price: null, oldPrice: null, stock: 10 }];
+    this.decantRows = DECANT_SIZES.map((size) => {
+      const v = p?.variants.find((x) => x.type === 'decant' && x.size === size);
+      return { size, enabled: !!v, price: v?.price ?? null, stock: v?.stock ?? 20 };
+    });
+    this.sizesError.set('');
+  }
+
+  addSizeRow(): void {
+    const last = this.bottleRows.at(-1);
+    this.bottleRows = [...this.bottleRows, { size: null, unit: last?.unit ?? 'ml', price: null, oldPrice: null, stock: 10 }];
+  }
+
+  removeSizeRow(index: number): void {
+    this.bottleRows = this.bottleRows.filter((_, i) => i !== index);
+  }
+
+  /** Decant price = bottle price per ml × size × 1.4 (pouring + atomiser) + 2, rounded, min 5. */
+  suggestDecantPrices(): void {
+    const ref = [...this.bottleRows].filter((r) => r.size && r.price && r.unit === 'ml').sort((a, b) => b.size! - a.size!)[0];
+    if (!ref) return;
+    const perMl = ref.price! / ref.size!;
+    this.decantRows = this.decantRows.map((d) => ({ ...d, price: Math.max(5, Math.round(perMl * d.size * 1.4 + 2)) }));
+  }
+
+  /** Builds the variants from the editor, or returns null (and shows why) when they are invalid. */
+  private buildVariants(kind: ProductKind): Variant[] | null {
+    const variants: Variant[] = this.bottleRows
+      .filter((r) => r.size || r.price)
+      .map((r) => {
+        const unit: SizeUnit = kind === 'perfume' ? 'ml' : r.unit;
+        return { id: variantId({ type: 'bottle', size: r.size ?? 0, unit }), type: 'bottle' as const, size: r.size ?? 0, unit, price: r.price ?? 0, oldPrice: r.oldPrice || null, stock: Math.max(0, r.stock ?? 0) };
+      });
+    if (kind === 'perfume') {
+      for (const d of this.decantRows.filter((x) => x.enabled)) {
+        variants.push({ id: variantId({ type: 'decant', size: d.size, unit: 'ml' }), type: 'decant', size: d.size, unit: 'ml', price: d.price ?? 0, oldPrice: null, stock: Math.max(0, d.stock ?? 0) });
+      }
+    }
+    if (!variants.length || variants.some((v) => !(v.size > 0) || !(v.price > 0))) {
+      this.sizesError.set(this.i18n.t('ap.sizesRequired'));
+      return null;
+    }
+    if (new Set(variants.map((v) => v.id)).size !== variants.length) {
+      this.sizesError.set(this.i18n.t('ap.duplicateSize'));
+      return null;
+    }
+    this.sizesError.set('');
+    return variants;
+  }
+
   private open(p: Product | null): void {
     this.editing.set(p);
+    this.loadSizes(p, this.form.controls.kind.value);
     this.images.set(p ? [...p.images].slice(0, MAX_PHOTOS) : []);
     this.uploadedThisSession = [];
     this.saved = false;
@@ -184,7 +261,6 @@ export class AdminProducts {
   openEdit(p: Product): void {
     this.form.reset({
       ...p,
-      oldPrice: p.oldPrice ?? null,
       seasons: [...p.seasons],
       skinTypes: [...p.skinTypes],
       ingredients: p.ingredients.join(', '),
@@ -209,12 +285,13 @@ export class AdminProducts {
       return;
     }
     const v = this.form.getRawValue();
+    const variants = this.buildVariants(v.kind);
+    if (!variants) return;
     const input: ProductInput = {
       ...v,
+      variants,
       brandId: v.brandId!,
       categoryId: v.categoryId!,
-      price: v.price ?? 0,
-      oldPrice: v.oldPrice || null,
       images: this.images(),
       topNotes: splitNotes(v.topNotes),
       heartNotes: splitNotes(v.heartNotes),

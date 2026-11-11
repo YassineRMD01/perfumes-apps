@@ -67,6 +67,9 @@
     </div>
     }
     @if (kind() === 'perfume') {
+    <label class="flex items-center justify-between text-sm font-medium text-ink">
+      {{ 'var.decantsAvailable' | t }} <p-toggleswitch [(ngModel)]="decantsOnly" />
+    </label>
     <div>
       <label class="field-label">{{ 'shop.season' | t }}</label>
       <div class="flex flex-wrap gap-2">

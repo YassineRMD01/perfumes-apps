@@ -1,15 +1,20 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { CouponService } from './coupon.service';
-import { CartItem, Product } from './models';
-import { ProductService } from './product.service';
+import { CartItem, Product, Variant } from './models';
+import { defaultVariant, ProductService } from './product.service';
 import { SettingsService } from './settings.service';
 import { load, persist } from './storage';
 
 export interface CartLine {
+  /** productId + variantId */
+  key: string;
   product: Product;
+  variant: Variant;
   qty: number;
   lineTotal: number;
 }
+
+const keyOf = (productId: number, variantId: string) => `${productId}:${variantId}`;
 
 /** Flat shipping fee in USD (free above the threshold set in the store settings). */
 export const SHIPPING_FEE = 9.9;
@@ -20,14 +25,23 @@ export class CartService {
   private readonly settings = inject(SettingsService);
   readonly freeShippingThreshold = computed(() => this.settings.settings().freeShippingThreshold);
   private readonly coupons = inject(CouponService);
-  private readonly _items = signal<CartItem[]>(load('cart', []));
+  private readonly _items = signal<CartItem[]>(
+    // carts saved before sizes existed: use the product's default size
+    load<CartItem[]>('cart', []).map((i) => {
+      const p = this.products.getById(i.productId);
+      return i.variantId || !p ? i : { ...i, variantId: defaultVariant(p).id };
+    }),
+  );
   private readonly _couponCode = signal<string | null>(load('coupon', null));
 
   readonly lines = computed<CartLine[]>(() =>
     this._items()
       .map((i) => {
         const product = this.products.getById(i.productId);
-        return product ? { product, qty: i.qty, lineTotal: product.price * i.qty } : null;
+        const variant = product?.variants.find((v) => v.id === i.variantId);
+        return product && variant
+          ? { key: keyOf(product.id, variant.id), product, variant, qty: i.qty, lineTotal: variant.price * i.qty }
+          : null;
       })
       .filter((l): l is CartLine => l !== null),
   );
@@ -57,31 +71,35 @@ export class CartService {
     persist('coupon', this._couponCode);
   }
 
-  qtyOf(productId: number): number {
-    return this._items().find((i) => i.productId === productId)?.qty ?? 0;
+  /** Quantity in the cart for one size (or for all sizes of the product when variantId is omitted). */
+  qtyOf(productId: number, variantId?: string): number {
+    return this._items()
+      .filter((i) => i.productId === productId && (!variantId || i.variantId === variantId))
+      .reduce((s, i) => s + i.qty, 0);
   }
 
-  /** Returns the quantity actually added (limited by stock). */
-  add(productId: number, qty = 1): number {
-    const stock = this.products.getById(productId)?.stock ?? 0;
-    const current = this.qtyOf(productId);
-    const next = Math.min(stock, current + qty);
+  /** Adds a size (the default size when omitted). Returns the quantity actually added (limited by that size's stock). */
+  add(productId: number, variantId?: string, qty = 1): number {
+    const product = this.products.getById(productId);
+    if (!product) return 0;
+    const variant = product.variants.find((v) => v.id === variantId) ?? defaultVariant(product);
+    const current = this.qtyOf(productId, variant.id);
+    const next = Math.min(variant.stock, current + qty);
     if (next <= current) return 0;
-    this.setQty(productId, next);
+    this.setQty(productId, variant.id, next);
     return next - current;
   }
 
-  setQty(productId: number, qty: number): void {
-    if (qty <= 0) return this.remove(productId);
+  setQty(productId: number, variantId: string, qty: number): void {
+    if (qty <= 0) return this.remove(productId, variantId);
+    const same = (i: CartItem) => i.productId === productId && i.variantId === variantId;
     this._items.update((items) =>
-      items.some((i) => i.productId === productId)
-        ? items.map((i) => (i.productId === productId ? { ...i, qty } : i))
-        : [...items, { productId, qty }],
+      items.some(same) ? items.map((i) => (same(i) ? { ...i, qty } : i)) : [...items, { productId, variantId, qty }],
     );
   }
 
-  remove(productId: number): void {
-    this._items.update((items) => items.filter((i) => i.productId !== productId));
+  remove(productId: number, variantId: string): void {
+    this._items.update((items) => items.filter((i) => !(i.productId === productId && i.variantId === variantId)));
   }
 
   applyCoupon(code: string): void {

@@ -42,6 +42,25 @@ Every product is either a **perfume** or a **cosmetic**:
 - The demo catalog has 16 perfumes and 10 cosmetics from 7 brands. Older saved demo data gets the new cosmetics, brands
   and categories added automatically, without touching your own changes.
 
+## Sizes, decants and prices
+
+Every product has one or more **sizes**, each with its own price, optional compare-at price and stock:
+
+- **Full sizes** (perfumes and cosmetics): as many as you want, with any size (e.g. 30 / 50 / 100 ml, or 9 g for a
+  powder). Cosmetics can use ml or g.
+- **Decants** (perfumes only): 2, 5, 10, 20 and 30 ml samples poured from the bottle. In the admin form each decant
+  size has an on/off switch, a price and a stock. "Suggest prices from the bottle" fills the decant prices from the
+  largest bottle's price per ml (× 1.4 + $2, minimum $5).
+- **Store**: cards show "From …" when there are several sizes and a "Decants available" badge. The product page has a
+  size picker (full sizes, then decants with the price per ml); price, stock and "add to cart" follow the selected size.
+  The quick-add button on cards adds the default size (largest full size in stock). The perfume filters include
+  "Decants available".
+- **Cart & orders**: each size is a separate cart line; orders record the size, and stock is taken from (and returned
+  to, when an order is cancelled) that exact size.
+- Prices in lists, sorting and the price filter use the lowest price; stock in lists is the total of all sizes.
+- Data saved before sizes existed is migrated: the old single size becomes a full size, demo perfumes get the demo
+  decants, and cart lines move to the default size.
+
 ## Perfume wear guide
 
 Every perfume has:
@@ -136,7 +155,7 @@ To use a real backend, replace `ImageStore.add()` with an upload request that re
 
 ### Admin back office (`/admin`, admin role only)
 - **Dashboard**: revenue, orders, average order value and customer KPIs, 6-month revenue chart, orders by status, recent orders, top sellers, low stock alerts
-- **Products**: sortable, searchable, paginated table with wear guide, CSV export; create/edit dialog with photo manager (up to 5 photos) and live preview; delete with confirmation
+- **Products**: sortable, searchable, paginated table with sizes and wear guide, CSV export (all sizes with price and stock); create/edit dialog with photo manager (up to 5 photos) and live preview; delete with confirmation
 - **Orders**: filter by status and search, CSV export; inline status changes (cancelling restocks the items); order detail dialog
 - **Customers**: order count, total spent, segment (New, Returning, VIP), and a detail view with contact info, saved
   address and order history

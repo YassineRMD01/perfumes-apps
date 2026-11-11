@@ -64,6 +64,7 @@ export class Catalog {
   protected readonly visibleCategories = computed(() => this.catalog.categoriesOf(this.kind()));
   protected readonly skinTypes = SKIN_TYPES.filter((s) => s !== 'All');
   protected readonly selectedSkin = signal<SkinType[]>([]);
+  protected readonly decantsOnly = signal(false);
   protected readonly gender = linkedSignal<Gender | 'All'>(() =>
     GENDERS.includes(this.genderParam() as Gender) ? (this.genderParam() as Gender) : 'All',
   );
@@ -127,6 +128,7 @@ export class Catalog {
     const time = kind === 'perfume' ? this.time() : 'All';
     const minLevel = kind === 'perfume' && this.minLongevity() ? LONGEVITIES.indexOf(this.minLongevity()!) : -1;
     const cosmeticOnly = kind === 'cosmetic' ? skin : [];
+    const decants = kind === 'perfume' && this.decantsOnly();
     const list = this.products.products().filter(
       (p) =>
         (!term ||
@@ -134,6 +136,7 @@ export class Catalog {
             .some((s) => s.toLowerCase().includes(term))) &&
         (gender === 'All' || p.gender === gender) &&
         (!kind || p.kind === kind) &&
+        (!decants || p.variants.some((v) => v.type === 'decant' && v.stock > 0)) &&
         (!cats.length || cats.includes(p.categoryId)) &&
         (!cosmeticOnly.length || p.skinTypes.includes('All') || cosmeticOnly.some((s) => p.skinTypes.includes(s))) &&
         (!brands.length || brands.includes(p.brandId)) &&
@@ -194,6 +197,7 @@ export class Catalog {
     this.inStockOnly.set(false);
     this.selectedSeasons.set([]);
     this.selectedSkin.set([]);
+    this.decantsOnly.set(false);
     this.time.set('All');
     this.minLongevity.set(null);
     this.sort.set('featured');

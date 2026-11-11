@@ -42,7 +42,11 @@ export class OrderService {
       name: l.product.name,
       brand: this.catalog.brandName(l.product.brandId),
       color: l.product.color,
-      price: l.product.price,
+      variantId: l.variant.id,
+      size: l.variant.size,
+      unit: l.variant.unit,
+      decant: l.variant.type === 'decant',
+      price: l.variant.price,
       qty: l.qty,
     }));
     const nextNum = Math.max(1000, ...this._orders().map((o) => Number(o.id.split('-')[1]) || 0)) + 1;
@@ -63,7 +67,7 @@ export class OrderService {
       createdAt: new Date().toISOString(),
     };
 
-    items.forEach((i) => this.products.adjustStock(i.productId, -i.qty));
+    items.forEach((i) => this.products.adjustStock(i.productId, -i.qty, i.variantId));
     if (order.couponCode) this.coupons.recordUse(order.couponCode);
     this._orders.update((list) => [order, ...list]);
     this.cart.clear();
@@ -74,8 +78,8 @@ export class OrderService {
     const order = this._orders().find((o) => o.id === id);
     if (!order || order.status === status) return;
     // Restock when cancelling, take stock again when reviving a cancelled order
-    if (status === 'Cancelled') order.items.forEach((i) => this.products.adjustStock(i.productId, i.qty));
-    if (order.status === 'Cancelled') order.items.forEach((i) => this.products.adjustStock(i.productId, -i.qty));
+    if (status === 'Cancelled') order.items.forEach((i) => this.products.adjustStock(i.productId, i.qty, i.variantId));
+    if (order.status === 'Cancelled') order.items.forEach((i) => this.products.adjustStock(i.productId, -i.qty, i.variantId));
     this._orders.update((list) => list.map((o) => (o.id === id ? { ...o, status } : o)));
   }
 }

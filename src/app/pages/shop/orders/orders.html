@@ -23,14 +23,14 @@
           <p-accordion-content>
             <div class="grid gap-6 md:grid-cols-[1fr_260px]">
               <ul class="divide-y divide-line">
-                @for (it of o.items; track it.productId) {
+                @for (it of o.items; track $index) {
                   <li class="flex items-center gap-3 py-3">
                     <a [routerLink]="['/product', it.productId]" class="flex h-14 w-12 items-center justify-center overflow-hidden rounded-lg bg-surface-2">
                       <app-bottle class="h-full w-full" [color]="it.color" [name]="it.name" [brand]="it.brand" [image]="photo(it.productId)" [packaging]="pack(it.productId)" fit="cover" />
                     </a>
                     <div class="flex-1 text-sm">
                       <div class="font-medium">{{ it.name }}</div>
-                      <div class="text-xs text-muted">{{ it.brand }} · {{ it.qty }} × {{ it.price | money }}</div>
+                      <div class="text-xs text-muted">{{ it.brand }}@if (it.size) { · {{ it.size }} {{ it.unit }}@if (it.decant) { {{ 'var.decant' | t }} } } · {{ it.qty }} × {{ it.price | money }}</div>
                     </div>
                     <div class="text-sm font-semibold">{{ it.price * it.qty | money }}</div>
                   </li>

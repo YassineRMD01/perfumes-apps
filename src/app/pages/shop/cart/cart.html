@@ -11,7 +11,7 @@
   } @else {
     <div class="grid gap-8 lg:grid-cols-[1fr_380px]">
       <div class="card divide-y divide-line">
-        @for (line of cart.lines(); track line.product.id) {
+        @for (line of cart.lines(); track line.key) {
           <div class="flex gap-4 p-4 sm:p-5">
             <a [routerLink]="['/product', line.product.id]" class="flex h-28 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface-2"
                [class.p-2]="!line.product.images.length">
@@ -23,15 +23,20 @@
                 <div>
                   <div class="text-xs font-semibold uppercase tracking-widest text-brand-ink">{{ line.product.brandId | brandName }}</div>
                   <a [routerLink]="['/product', line.product.id]" class="font-display text-lg font-semibold hover:text-brand-ink">{{ line.product.name }}</a>
-                  <div class="text-xs text-muted">{{ line.product.concentration | tv: 'conc' }} · {{ line.product.volumeMl }} ml</div>
+                  <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                    <span class="size-tag">{{ line.variant.size }} {{ line.variant.unit }}</span>
+                    @if (line.variant.type === 'decant') { <span class="size-tag size-tag--decant">{{ 'var.decant' | t }}</span> }
+                    @if (line.product.kind === 'perfume' && line.variant.type === 'bottle') { <span>{{ line.product.concentration | tv: 'conc' }}</span> }
+                    <span>· {{ line.variant.price | money }}</span>
+                  </div>
                 </div>
                 <div class="text-end font-semibold">{{ line.lineTotal | money }}</div>
               </div>
               <div class="mt-auto flex items-center justify-between pt-3">
-                <p-inputnumber [ngModel]="line.qty" (ngModelChange)="cart.setQty(line.product.id, $event ?? 1)" dir="ltr"
-                               [showButtons]="true" buttonLayout="horizontal" [min]="1" [max]="line.product.stock"
+                <p-inputnumber [ngModel]="line.qty" (ngModelChange)="cart.setQty(line.product.id, line.variant.id, $event ?? 1)" dir="ltr"
+                               [showButtons]="true" buttonLayout="horizontal" [min]="1" [max]="line.variant.stock"
                                size="small" inputStyleClass="w-12 text-center" />
-                <button class="text-sm text-muted hover:text-red-600" (click)="cart.remove(line.product.id)">
+                <button class="text-sm text-muted hover:text-red-600" (click)="cart.remove(line.product.id, line.variant.id)">
                   <fa-icon [icon]="i.trash" /> {{ 'cart.remove' | t }}
                 </button>
               </div>

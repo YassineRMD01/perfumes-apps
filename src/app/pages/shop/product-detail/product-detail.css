@@ -85,3 +85,53 @@
   font-size: 0.8rem;
   color: var(--color-brand-ink);
 }
+
+.size {
+  display: flex;
+  min-width: 5.5rem;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 1rem;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  padding: 0.5rem 0.85rem;
+  transition: border-color 0.2s, background-color 0.2s, transform 0.2s;
+}
+
+.size:hover {
+  border-color: var(--color-brand-300);
+}
+
+.size--on {
+  border-color: var(--color-brand-500);
+  background: var(--color-brand-soft);
+  box-shadow: 0 0 0 1px var(--color-brand-500);
+}
+
+.size--out {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.size--decant {
+  min-width: 5rem;
+  border-style: dashed;
+}
+
+.size--decant.size--on {
+  border-style: solid;
+}
+
+.size__label {
+  font-weight: 600;
+}
+
+.size__price {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.size__ppm {
+  font-size: 0.65rem;
+  color: var(--color-faint);
+}

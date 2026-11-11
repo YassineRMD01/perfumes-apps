@@ -10,6 +10,7 @@ import { I18nService } from '../../core/i18n/i18n.service';
 import { I18N_PIPES } from '../../core/i18n/pipes';
 import { ImageStore } from '../../core/image-store.service';
 import { Product } from '../../core/models';
+import { defaultVariant } from '../../core/product.service';
 import { ReviewService } from '../../core/review.service';
 import { WishlistService } from '../../core/wishlist.service';
 import { Bottle } from '../bottle/bottle';
@@ -38,6 +39,13 @@ export class ProductCard {
   protected readonly cover = computed(() => this.images.resolve(this.product().images[0]));
   protected readonly hoverImage = computed(() => this.images.resolve(this.product().images[1]));
   protected readonly rating = computed(() => this.reviews.stats(this.product()));
+  protected readonly hasDecants = computed(() => this.product().variants.some((v) => v.type === 'decant'));
+  /** Full sizes, e.g. "50 · 100 ml" */
+  protected readonly sizes = computed(() => {
+    const bottles = this.product().variants.filter((v) => v.type === 'bottle');
+    const list = bottles.length ? bottles : this.product().variants;
+    return list.map((v) => v.size).join(' · ') + ' ' + (list[0]?.unit ?? 'ml');
+  });
   protected readonly wished = computed(() => this.wishlist.ids().includes(this.product().id));
   protected readonly discount = computed(() => {
     const { price, oldPrice } = this.product();
@@ -46,10 +54,12 @@ export class ProductCard {
 
   addToCart(): void {
     const p = this.product();
-    const added = this.cart.add(p.id);
+    // quick add uses the default size (largest full size in stock); other sizes are chosen on the product page
+    const v = defaultVariant(p);
+    const added = this.cart.add(p.id, v.id);
     this.toast.add(
       added
-        ? { severity: 'success', summary: this.i18n.t('toast.addedToCart'), detail: `${p.name} — ${this.catalog.brandName(p.brandId)}`, life: 2500 }
+        ? { severity: 'success', summary: this.i18n.t('toast.addedToCart'), detail: `${p.name} · ${v.size} ${v.unit}`, life: 2500 }
         : { severity: 'warn', summary: this.i18n.t('toast.stockLimit'), detail: this.i18n.t('toast.stockLimitDetail', { name: p.name }), life: 2500 },
     );
   }

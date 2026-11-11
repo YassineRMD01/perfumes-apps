@@ -1,7 +1,9 @@
-import { Brand, Category, Coupon, Order, OrderStatus, Product, Review, User } from './models';
+import { Brand, Category, Coupon, DECANT_SIZES, Order, OrderStatus, Product, Review, User, Variant, variantId } from './models';
+import { summarize } from './variants';
 
-type PerfumeSeed = Omit<Product, 'kind' | 'unit' | 'skinTypes' | 'ingredients' | 'howToUse' | 'packaging'>;
-type CosmeticSeed = Omit<Product, 'kind' | 'concentration' | 'topNotes' | 'heartNotes' | 'baseNotes' | 'longevity' | 'seasons' | 'timeOfDay'>;
+/** Seeds are written with a single price/size; `withSizes` turns that into variants */
+type PerfumeSeed = Omit<Product, 'kind' | 'unit' | 'skinTypes' | 'ingredients' | 'howToUse' | 'packaging' | 'variants'>;
+type CosmeticSeed = Omit<Product, 'kind' | 'concentration' | 'topNotes' | 'heartNotes' | 'baseNotes' | 'longevity' | 'seasons' | 'timeOfDay' | 'variants'>;
 
 const d = (daysAgo: number) => new Date(Date.now() - daysAgo * 86_400_000).toISOString();
 
@@ -62,10 +64,43 @@ const COSMETIC_SEEDS: CosmeticSeed[] = [
   { id: 26, name: 'Silk Hair Mist', brandId: 1, categoryId: 'hair', description: 'A delicate hair perfume with rose and silk proteins that adds shine.', price: 38, stock: 22, volumeMl: 50, unit: 'ml', gender: 'Women', skinTypes: [], ingredients: ['Rose extract', 'Silk proteins'], howToUse: 'Mist over dry hair from about 20 cm.', packaging: 'bottle', color: '#f4c3d6', images: [], rating: 4.5, reviews: 33, featured: false, createdAt: d(15) },
 ];
 
-const perfume = (p: PerfumeSeed): Product => ({ ...p, kind: 'perfume', unit: 'ml', skinTypes: [], ingredients: [], howToUse: '', packaging: 'bottle' });
-const cosmetic = (p: CosmeticSeed): Product => ({
-  ...p, kind: 'cosmetic', concentration: 'EDP', topNotes: [], heartNotes: [], baseNotes: [], longevity: 'Moderate', seasons: [], timeOfDay: 'Both',
-});
+const round = (n: number) => Math.max(5, Math.round(n));
+
+/** Demo sizes: the seed size, one extra full size, and (perfumes) decants priced from the bottle's price per ml. */
+function withSizes(p: { id: number; price: number; oldPrice?: number | null; stock: number; volumeMl: number; unit: Product['unit'] }, decants: boolean) {
+  const bottle = (size: number, factor: number, stock: number): Variant => ({
+    id: variantId({ type: 'bottle', size, unit: p.unit }), type: 'bottle', size, unit: p.unit,
+    price: round(p.price * factor), oldPrice: p.oldPrice ? round(p.oldPrice * factor) : null, stock,
+  });
+  const variants: Variant[] = [bottle(p.volumeMl, 1, p.stock)];
+  const extra = EXTRA_SIZES[p.id];
+  if (extra) variants.push(bottle(extra[0], extra[1], Math.max(2, Math.round(p.stock * 0.6))));
+  if (decants) {
+    const perMl = p.price / p.volumeMl;
+    for (const size of DECANT_SIZES.filter((s) => s <= 20 || p.price >= 130)) {
+      variants.push({ id: variantId({ type: 'decant', size, unit: 'ml' }), type: 'decant', size, unit: 'ml', price: round(perMl * size * 1.4 + 2), oldPrice: null, stock: 12 + ((p.id * 7 + size) % 25) });
+    }
+  }
+  return variants;
+}
+
+/** Extra full size per demo product: [size, price factor vs the seed size] */
+const EXTRA_SIZES: Record<number, [number, number]> = {
+  1: [50, 0.62], 2: [100, 1.3], 3: [50, 0.6], 4: [50, 0.62], 5: [200, 1.6], 6: [100, 1.55], 7: [50, 0.62], 8: [100, 1.3],
+  9: [100, 1.7], 10: [50, 0.6], 11: [50, 0.62], 12: [100, 1.5], 13: [50, 0.62], 14: [50, 0.6], 15: [100, 1.3], 16: [50, 0.6],
+  18: [30, 0.7], 21: [100, 0.6], 22: [500, 1.7], 23: [30, 0.55], 25: [500, 1.6],
+};
+
+const perfume = ({ price, oldPrice, stock, volumeMl, ...p }: PerfumeSeed): Product =>
+  summarize({
+    ...p, kind: 'perfume', skinTypes: [], ingredients: [], howToUse: '', packaging: 'bottle',
+    variants: withSizes({ id: p.id, price, oldPrice, stock, volumeMl, unit: 'ml' }, true),
+  });
+const cosmetic = ({ price, oldPrice, stock, volumeMl, unit, ...p }: CosmeticSeed): Product =>
+  summarize({
+    ...p, kind: 'cosmetic', concentration: 'EDP', topNotes: [], heartNotes: [], baseNotes: [], longevity: 'Moderate', seasons: [], timeOfDay: 'Both',
+    variants: withSizes({ id: p.id, price, oldPrice, stock, volumeMl, unit }, false),
+  });
 
 export const SEED_PRODUCTS: Product[] = [...PERFUME_SEEDS.map(perfume), ...COSMETIC_SEEDS.map(cosmetic)];
 
@@ -84,7 +119,8 @@ function makeOrder(n: number, userId: number, daysAgo: number, status: OrderStat
   const items = lines.map(([pid, qty]) => {
     const p = SEED_PRODUCTS.find((x) => x.id === pid)!;
     const brand = SEED_BRANDS.find((b) => b.id === p.brandId)!.name;
-    return { productId: p.id, name: p.name, brand, color: p.color, price: p.price, qty };
+    const v = p.variants.filter((x) => x.type === 'bottle').at(-1)!;
+    return { productId: p.id, name: p.name, brand, color: p.color, variantId: v.id, size: v.size, unit: v.unit, decant: false, price: v.price, qty };
   });
   const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
   const shipping = subtotal >= 150 ? 0 : 9.9;

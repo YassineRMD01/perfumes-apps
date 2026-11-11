@@ -7,6 +7,7 @@
 
   <div class="badges">
     @if (discount()) { <p-tag severity="danger" [value]="'-' + discount() + '%'" /> }
+    @if (hasDecants()) { <p-tag severity="contrast" [value]="'var.decantsAvailable' | t" /> }
     @if (p.stock === 0) { <p-tag severity="secondary" [value]="'card.soldOut' | t" /> }
     @else if (p.stock <= 5) { <p-tag severity="warn" [value]="'card.onlyLeft' | t: { n: p.stock }" /> }
   </div>
@@ -30,7 +31,7 @@
     <div class="meta">
       <span>{{ p.categoryId | categoryName }}</span>
       <span aria-hidden="true">·</span>
-      <span>{{ p.volumeMl }} {{ p.unit }}</span>
+      <span>{{ sizes() }}</span>
       <span aria-hidden="true">·</span>
       <span class="inline-flex items-center gap-1"><fa-icon [icon]="i.star" class="text-brand-500" />{{ rating().average.toFixed(1) }}</span>
     </div>
@@ -44,7 +45,11 @@
     }
     <div class="footer">
       <div>
-        <span class="price">{{ p.price | money }}</span>
+        @if (p.variants.length > 1) {
+          <span class="price"><span class="from">{{ 'var.from' | t: { price: '' } }}</span>{{ p.price | money }}</span>
+        } @else {
+          <span class="price">{{ p.price | money }}</span>
+        }
         @if (p.oldPrice) {
           <span class="old-price">{{ p.oldPrice | money }}</span>
         }

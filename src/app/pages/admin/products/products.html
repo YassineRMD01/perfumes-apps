@@ -54,13 +54,14 @@
           <div class="font-medium">{{ p.name }}</div>
           <div class="text-xs text-muted">
             <fa-icon [icon]="p.kind === 'perfume' ? i.perfume : i.soap" class="me-1 text-brand-ink" [title]="p.kind | tv: 'kind'" />
-            {{ p.brandId | brandName }} · @if (p.kind === 'perfume') { {{ p.concentration }} } {{ p.volumeMl }} {{ p.unit }}
+            {{ p.brandId | brandName }} · @if (p.kind === 'perfume') { {{ p.concentration }} · }
+            {{ 'var.sizesCount' | t: { n: p.variants.length } }}@if (hasDecants(p)) { · {{ 'var.decants' | t }} }
           </div>
         </td>
         <td>{{ p.categoryId | categoryName }}</td>
         <td>{{ p.gender | tv: 'gender' }}</td>
         <td>
-          {{ p.price | money }}
+          @if (p.variants.length > 1) { <span class="text-xs text-muted">{{ 'var.from' | t: { price: '' } }}</span> }{{ p.price | money }}
           @if (p.oldPrice) { <div class="text-xs text-faint line-through">{{ p.oldPrice | money }}</div> }
         </td>
         <td>
@@ -115,15 +116,58 @@
                   [placeholder]="'ap.selectBrand' | t" class="w-full" appendTo="body" [invalid]="bad('brandId')" />
       </div>
       <div class="sm:col-span-2"><label class="field-label">{{ 'ap.description' | t }} *</label><textarea pTextarea formControlName="description" rows="3" class="w-full" [invalid]="bad('description')"></textarea></div>
-      <div><label class="field-label">{{ 'ap.price' | t }} (USD) *</label><p-inputnumber formControlName="price" mode="currency" currency="USD" [locale]="i18n.locale()" [fluid]="true" [invalid]="bad('price')" /></div>
-      <div><label class="field-label">{{ 'ap.oldPrice' | t }} (USD)</label><p-inputnumber formControlName="oldPrice" mode="currency" currency="USD" [locale]="i18n.locale()" [fluid]="true" /></div>
-      <div><label class="field-label">{{ 'ap.stock' | t }} *</label><p-inputnumber formControlName="stock" [min]="0" [showButtons]="true" [fluid]="true" /></div>
-      <div>
-        <label class="field-label">{{ 'cos.size' | t }} *</label>
-        <div class="flex gap-2">
-          <p-inputnumber formControlName="volumeMl" [min]="0.1" [maxFractionDigits]="1" [fluid]="true" class="flex-1" />
-          <p-selectbutton [options]="unitOptions" formControlName="unit" [allowEmpty]="false" [ariaLabel]="'ap.unit' | t" />
+      <!-- Sizes & prices -->
+      <div class="sm:col-span-2 rounded-2xl border border-line p-4">
+        <div class="mb-1 text-xs font-medium uppercase tracking-[0.18em] text-brand-ink">{{ 'ap.sizes' | t }}</div>
+        <div class="field-label mt-3">{{ 'ap.fullSizes' | t }}</div>
+        <p class="mb-3 text-xs text-muted">{{ 'ap.fullSizesHint' | t }}</p>
+        <div class="sizes-grid sizes-grid--head" aria-hidden="true">
+          <span>{{ 'cos.size' | t }}</span><span>{{ 'ap.price' | t }} (USD)</span><span>{{ 'ap.oldPrice' | t }}</span><span>{{ 'ap.stock' | t }}</span><span></span>
         </div>
+        @for (row of bottleRows; track $index; let idx = $index) {
+          <div class="sizes-grid">
+            <div class="flex gap-1.5">
+              <p-inputnumber [(ngModel)]="row.size" [ngModelOptions]="{ standalone: true }" [min]="0.1" [maxFractionDigits]="1" [fluid]="true"
+                             [ariaLabel]="'cos.size' | t" placeholder="100" />
+              @if (form.controls.kind.value === 'cosmetic') {
+                <p-select [options]="unitOptions" [(ngModel)]="row.unit" [ngModelOptions]="{ standalone: true }" class="w-20 shrink-0" appendTo="body" [ariaLabel]="'ap.unit' | t" />
+              } @else {
+                <span class="unit">ml</span>
+              }
+            </div>
+            <p-inputnumber [(ngModel)]="row.price" [ngModelOptions]="{ standalone: true }" mode="currency" currency="USD" [locale]="i18n.locale()" [fluid]="true" [ariaLabel]="'ap.price' | t" />
+            <p-inputnumber [(ngModel)]="row.oldPrice" [ngModelOptions]="{ standalone: true }" mode="currency" currency="USD" [locale]="i18n.locale()" [fluid]="true" [ariaLabel]="'ap.oldPrice' | t" />
+            <p-inputnumber [(ngModel)]="row.stock" [ngModelOptions]="{ standalone: true }" [min]="0" [fluid]="true" [ariaLabel]="'ap.stock' | t" />
+            <p-button [text]="true" [rounded]="true" severity="danger" [disabled]="bottleRows.length === 1 && form.controls.kind.value === 'cosmetic'"
+                      (onClick)="removeSizeRow(idx)" [ariaLabel]="'ap.removeSize' | t" [pTooltip]="'ap.removeSize' | t"><fa-icon [icon]="i.trash" /></p-button>
+          </div>
+        }
+        <p-button size="small" [text]="true" (onClick)="addSizeRow()"><fa-icon [icon]="i.plus" /> {{ 'ap.addSize' | t }}</p-button>
+
+        @if (form.controls.kind.value === 'perfume') {
+          <div class="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-4">
+            <div>
+              <div class="field-label !mb-0">{{ 'var.decants' | t }}</div>
+              <p class="text-xs text-muted">{{ 'ap.decantsHint' | t }}</p>
+            </div>
+            <p-button size="small" severity="secondary" [outlined]="true" (onClick)="suggestDecantPrices()"><fa-icon [icon]="i.magic" /> {{ 'ap.suggestPrices' | t }}</p-button>
+          </div>
+          <div class="mt-3 grid gap-2 sm:grid-cols-5">
+            @for (d of decantRows; track d.size) {
+              <div class="decant" [class.decant--on]="d.enabled">
+                <label class="flex cursor-pointer items-center justify-between gap-2">
+                  <span class="font-semibold">{{ d.size }} ml</span>
+                  <p-toggleswitch [(ngModel)]="d.enabled" [ngModelOptions]="{ standalone: true }" [ariaLabel]="('ap.offer' | t) + ' ' + d.size + ' ml'" />
+                </label>
+                <p-inputnumber [(ngModel)]="d.price" [ngModelOptions]="{ standalone: true }" mode="currency" currency="USD" [locale]="i18n.locale()"
+                               [fluid]="true" [disabled]="!d.enabled" size="small" [ariaLabel]="'ap.price' | t" />
+                <p-inputnumber [(ngModel)]="d.stock" [ngModelOptions]="{ standalone: true }" [min]="0" [fluid]="true" [disabled]="!d.enabled" size="small"
+                               [ariaLabel]="'ap.stock' | t" [prefix]="('ap.stock' | t) + ' '" />
+              </div>
+            }
+          </div>
+        }
+        @if (sizesError()) { <p class="field-error mt-2">{{ sizesError() }}</p> }
       </div>
       <div><label class="field-label">{{ 'ap.gender' | t }}</label><p-select [options]="genderOptions()" optionLabel="label" optionValue="value" formControlName="gender" class="w-full" appendTo="body" /></div>
       <div><label class="field-label">{{ 'ap.family' | t }} *</label><p-select [options]="categoryOptions()" optionLabel="label" optionValue="value" formControlName="categoryId" [placeholder]="'ap.selectCategory' | t" class="w-full" appendTo="body" [invalid]="bad('categoryId')" /></div>

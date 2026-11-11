@@ -128,6 +128,13 @@
   font-weight: 600;
 }
 
+.from {
+  margin-inline-end: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
 .old-price {
   margin-inline-start: 0.5rem;
   font-size: 0.85rem;

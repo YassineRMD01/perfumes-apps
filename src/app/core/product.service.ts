@@ -1,15 +1,29 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { ImageStore } from './image-store.service';
+import { Variant, variantId } from './models';
+import { defaultVariant, summarize } from './variants';
+
+export { defaultVariant, sortVariants, summarize } from './variants';
 import { Product, ProductInput } from './models';
 import { CatalogService } from './catalog.service';
 import { SEED_BRANDS, SEED_PRODUCTS } from './seed';
 import { load, migrateOnce, persist } from './storage';
 
-/** Fill fields added in later versions (wear guide, cosmetics) on products saved earlier. */
+/** Fill fields added in later versions (wear guide, cosmetics, sizes) on products saved earlier. */
 function normalize(p: Product): Product {
   const seed = SEED_PRODUCTS.find((s) => s.id === p.id && s.name === p.name);
-  return {
+  // Products saved before sizes existed: their single size becomes a full-size variant;
+  // demo perfumes also get the demo decants.
+  let variants = p.variants;
+  if (!variants?.length) {
+    const unit = p.unit ?? 'ml';
+    const bottle: Variant = { id: variantId({ type: 'bottle', size: p.volumeMl, unit }), type: 'bottle', size: p.volumeMl, unit, price: p.price, oldPrice: p.oldPrice ?? null, stock: p.stock };
+    const extra = (seed?.variants ?? []).filter((v) => v.id !== bottle.id && (v.type === 'decant' || v.size !== bottle.size));
+    variants = [bottle, ...extra];
+  }
+  return summarize({
     ...p,
+    variants,
     kind: p.kind ?? 'perfume',
     unit: p.unit ?? 'ml',
     longevity: p.longevity ?? seed?.longevity ?? 'Moderate',
@@ -19,7 +33,7 @@ function normalize(p: Product): Product {
     ingredients: p.ingredients ?? [],
     howToUse: p.howToUse ?? '',
     packaging: p.packaging ?? 'bottle',
-  };
+  });
 }
 
 @Injectable({ providedIn: 'root' })
@@ -61,14 +75,14 @@ export class ProductService {
 
   create(input: ProductInput): Product {
     const id = Math.max(0, ...this._products().map((p) => p.id)) + 1;
-    const perfume: Product = { ...input, id, rating: 0, reviews: 0, createdAt: new Date().toISOString() };
-    this._products.update((list) => [perfume, ...list]);
-    return perfume;
+    const product = summarize({ ...input, id, rating: 0, reviews: 0, createdAt: new Date().toISOString() });
+    this._products.update((list) => [product, ...list]);
+    return product;
   }
 
   update(id: number, input: ProductInput): void {
     const previous = this.getById(id);
-    this._products.update((list) => list.map((p) => (p.id === id ? { ...p, ...input } : p)));
+    this._products.update((list) => list.map((p) => (p.id === id ? summarize({ ...p, ...input }) : p)));
     // Free uploaded photos that were removed from the product
     if (previous) this.imageStore.remove(previous.images.filter((ref) => !input.images.includes(ref)));
   }
@@ -92,9 +106,19 @@ export class ProductService {
     return this.imageStore.resolve(p?.images[0]);
   }
 
-  adjustStock(id: number, delta: number): void {
+  variant(p: Product | undefined, variantId: string | undefined): Variant | undefined {
+    if (!p) return undefined;
+    return p.variants.find((v) => v.id === variantId) ?? (variantId ? undefined : defaultVariant(p));
+  }
+
+  /** Change the stock of one size (the default size when `variantId` is unknown, e.g. very old orders). */
+  adjustStock(id: number, delta: number, variantId?: string): void {
     this._products.update((list) =>
-      list.map((p) => (p.id === id ? { ...p, stock: Math.max(0, p.stock + delta) } : p)),
+      list.map((p) => {
+        if (p.id !== id) return p;
+        const target = p.variants.find((v) => v.id === variantId) ?? defaultVariant(p);
+        return summarize({ ...p, variants: p.variants.map((v) => (v === target ? { ...v, stock: Math.max(0, v.stock + delta) } : v)) });
+      }),
     );
   }
 }

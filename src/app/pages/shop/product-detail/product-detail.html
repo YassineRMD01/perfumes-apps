@@ -54,19 +54,21 @@
           <a href="#reviews" class="hover:text-brand-ink">{{ stats().average.toFixed(1) }} · {{ 'pd.reviews' | t: { n: stats().count } }}</a>
         </div>
 
-        <div class="mt-5 flex items-baseline gap-3">
-          <span class="text-4xl">{{ p.price | money }}</span>
-          @if (p.oldPrice) {
-            <span class="text-lg text-faint line-through">{{ p.oldPrice | money }}</span>
+        @let v = selected()!;
+        <div class="mt-5 flex flex-wrap items-baseline gap-3">
+          <span class="text-4xl">{{ v.price | money }}</span>
+          @if (v.oldPrice) {
+            <span class="text-lg text-faint line-through">{{ v.oldPrice | money }}</span>
             <p-tag severity="danger" [value]="'pd.sale' | t" />
           }
+          <span class="text-sm text-muted">{{ v.size }} {{ v.unit }}@if (v.type === 'decant') { · {{ 'var.decant' | t }} }</span>
         </div>
 
         <div class="mt-4 flex flex-wrap gap-2">
           <p-tag [value]="p.gender | tv: 'gender'" severity="secondary" />
           <p-tag [value]="p.categoryId | categoryName" severity="secondary" />
           @if (p.kind === 'perfume') { <p-tag [value]="p.concentration | tv: 'conc'" severity="secondary" /> }
-          <p-tag [value]="p.volumeMl + ' ' + p.unit" severity="secondary" />
+          
         </div>
 
         <p class="mt-6 leading-relaxed text-muted">{{ p.description }}</p>
@@ -103,7 +105,7 @@
             }
             <div class="cos-row">
               <div class="cos-label">{{ 'cos.size' | t }}</div>
-              <div class="text-sm">{{ p.volumeMl }} {{ p.unit }}</div>
+              <div class="text-sm">@for (o of bottles(); track o.id; let last = $last) {{{ o.size }} {{ o.unit }}@if (!last) { · }}</div>
             </div>
             @if (p.howToUse) {
               <div class="cos-row">
@@ -116,11 +118,44 @@
 
         <p-divider />
 
+        <!-- Size picker -->
+        <div class="mb-6">
+          <div class="field-label">{{ 'var.choose' | t }}</div>
+          @if (bottles().length) {
+            @if (decants().length) { <div class="mb-1.5 text-xs uppercase tracking-[0.16em] text-muted">{{ 'var.fullSize' | t }}</div> }
+            <div class="flex flex-wrap gap-2" role="radiogroup">
+              @for (o of bottles(); track o.id) {
+                <button type="button" role="radio" class="size" [class.size--on]="o.id === v.id" [class.size--out]="!o.stock"
+                        [attr.aria-checked]="o.id === v.id" (click)="selectedId.set(o.id)">
+                  <span class="size__label">{{ o.size }} {{ o.unit }}</span>
+                  <span class="size__price">{{ o.price | money }}</span>
+                </button>
+              }
+            </div>
+          }
+          @if (decants().length) {
+            <div class="mb-1.5 mt-4 flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted">
+              {{ 'var.decants' | t }}
+            </div>
+            <div class="flex flex-wrap gap-2" role="radiogroup">
+              @for (o of decants(); track o.id) {
+                <button type="button" role="radio" class="size size--decant" [class.size--on]="o.id === v.id" [class.size--out]="!o.stock"
+                        [attr.aria-checked]="o.id === v.id" (click)="selectedId.set(o.id)">
+                  <span class="size__label">{{ o.size }} ml</span>
+                  <span class="size__price">{{ o.price | money }}</span>
+                  <span class="size__ppm">{{ 'var.perMl' | t: { price: ((o.price / o.size) | money) } }}</span>
+                </button>
+              }
+            </div>
+            <p class="mt-2 text-xs text-muted">{{ 'var.decantHint' | t }}</p>
+          }
+        </div>
+
         <div class="mb-4 text-sm">
-          @if (p.stock === 0) {
+          @if (v.stock === 0) {
             <span class="font-medium text-red-600"><fa-icon [icon]="i.warning" /> {{ 'pd.outOfStock' | t }}</span>
-          } @else if (p.stock <= 5) {
-            <span class="font-medium text-brand-ink"><fa-icon [icon]="i.fire" /> {{ 'pd.hurry' | t: { n: p.stock } }}</span>
+          } @else if (v.stock <= 5) {
+            <span class="font-medium text-brand-ink"><fa-icon [icon]="i.fire" /> {{ 'pd.hurry' | t: { n: v.stock } }}</span>
           } @else {
             <span class="font-medium text-emerald-700"><fa-icon [icon]="i.checkCircle" /> {{ 'pd.inStock' | t }}</span>
           }
@@ -128,9 +163,9 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
-          <p-inputnumber [(ngModel)]="qty" [showButtons]="true" buttonLayout="horizontal" [min]="1" [max]="Math.max(1, p.stock - inCart())"
-                         [disabled]="p.stock - inCart() <= 0" inputStyleClass="w-14 text-center" dir="ltr" />
-          <p-button size="large" [disabled]="p.stock - inCart() <= 0" (onClick)="addToCart()" styleClass="flex-1">
+          <p-inputnumber [(ngModel)]="qty" [showButtons]="true" buttonLayout="horizontal" [min]="1" [max]="Math.max(1, v.stock - inCart())"
+                         [disabled]="v.stock - inCart() <= 0" inputStyleClass="w-14 text-center" dir="ltr" />
+          <p-button size="large" [disabled]="v.stock - inCart() <= 0" (onClick)="addToCart()" styleClass="flex-1">
             <fa-icon [icon]="i.cartPlus" /> {{ 'pd.addToCart' | t }}
           </p-button>
           <p-button size="large" severity="secondary" [outlined]="true" (onClick)="toggleWish()" [ariaLabel]="'pd.toggleWish' | t">

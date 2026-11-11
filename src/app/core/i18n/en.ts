@@ -623,6 +623,28 @@ export const en = {
   'pref.system': 'System',
   'accent.gold': 'Gold',
 
+  // Sizes & decants
+  'var.fullSize': 'Full size',
+  'var.decant': 'Decant',
+  'var.decants': 'Decants (samples)',
+  'var.decantHint': 'Poured from the original bottle into a travel atomiser — ideal to try a scent.',
+  'var.from': 'From {price}',
+  'var.decantsAvailable': 'Decants available',
+  'var.choose': 'Choose a size',
+  'var.perMl': '{price} / ml',
+  'var.sizesCount': '{n} sizes',
+  'ap.sizes': 'Sizes & prices',
+  'ap.fullSizes': 'Full sizes',
+  'ap.fullSizesHint': 'Add as many sizes as you sell (e.g. 30, 50, 100 ml), each with its own price and stock.',
+  'ap.addSize': 'Add a size',
+  'ap.removeSize': 'Remove size',
+  'ap.decantsHint': 'Turn on the sizes you offer as decants.',
+  'ap.suggestPrices': 'Suggest prices from the bottle',
+  'ap.sizesRequired': 'Add at least one size with a price above 0.',
+  'ap.duplicateSize': 'Each size can only be listed once.',
+  'ap.colSizes': 'Sizes',
+  'ap.offer': 'Offer',
+
   // PrimeNG built-in texts
   'prime.empty': 'No results found',
   'prime.selection': '{0} items selected',

@@ -12,3 +12,16 @@
   padding: 0.6rem 0.85rem;
   color: var(--color-brand-ink);
 }
+
+.size-tag {
+  border-radius: 9999px;
+  background: var(--color-surface-2);
+  padding: 0.05rem 0.5rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.size-tag--decant {
+  background: var(--color-brand-soft);
+  color: var(--color-brand-ink);
+}

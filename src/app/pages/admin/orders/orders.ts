@@ -75,7 +75,7 @@ export class AdminOrders {
        'Total (USD)', 'Address', 'City', 'Country'],
       this.filtered().map((o) => [
         o.id, o.createdAt.slice(0, 16).replace('T', ' '), o.customerName, o.email, o.status, o.payment,
-        o.items.map((i) => `${i.qty}× ${i.name}`).join(' | '), o.subtotal, o.discount ?? 0, o.couponCode ?? '', o.shipping, o.total,
+        o.items.map((i) => `${i.qty}× ${i.name}${i.size ? ` ${i.size}${i.unit}${i.decant ? ' decant' : ''}` : ''}`).join(' | '), o.subtotal, o.discount ?? 0, o.couponCode ?? '', o.shipping, o.total,
         o.shippingInfo.address, o.shippingInfo.city, o.shippingInfo.country,
       ]),
     );

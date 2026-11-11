@@ -11,6 +11,24 @@ export type Packaging = 'bottle' | 'jar' | 'tube' | 'dropper' | 'lipstick' | 'co
 export type SizeUnit = 'ml' | 'g';
 
 export const PRODUCT_KINDS: ProductKind[] = ['perfume', 'cosmetic'];
+/** Decant (sample) sizes a perfume can be offered in, in ml */
+export const DECANT_SIZES = [2, 5, 10, 20, 30] as const;
+
+/** One purchasable size of a product, with its own price and stock. */
+export interface Variant {
+  /** Unique within the product, e.g. "b100ml" (bottle) or "d5" (decant) */
+  id: string;
+  /** "bottle" = full size (any size, customizable); "decant" = sample poured from a bottle (perfumes only) */
+  type: 'bottle' | 'decant';
+  size: number;
+  unit: SizeUnit;
+  /** USD */
+  price: number;
+  oldPrice?: number | null;
+  stock: number;
+}
+
+export const variantId = (v: Pick<Variant, 'type' | 'size' | 'unit'>) => (v.type === 'decant' ? `d${v.size}` : `b${v.size}${v.unit}`);
 export const SKIN_TYPES: SkinType[] = ['All', 'Dry', 'Oily', 'Combination', 'Sensitive'];
 export const PACKAGINGS: Packaging[] = ['bottle', 'jar', 'tube', 'dropper', 'lipstick', 'compact'];
 
@@ -56,11 +74,15 @@ export interface Product {
   brandId: number;
   categoryId: string;
   description: string;
-  /** Price in the store base currency (USD). */
+  /** Sizes on sale: full sizes (bottle) and, for perfumes, decants. At least one. */
+  variants: Variant[];
+  // ---- Summary of `variants`, kept in sync by ProductService (used for sorting, filters and lists) ----
+  /** Lowest price (USD) — shown as "From …" when there are several sizes */
   price: number;
   oldPrice?: number | null;
+  /** Total stock of all sizes */
   stock: number;
-  /** Size, in `unit` (ml or g) */
+  /** Size of the default variant (largest full size) */
   volumeMl: number;
   unit: SizeUnit;
   gender: Gender;
@@ -91,7 +113,8 @@ export interface Product {
   createdAt: string;
 }
 
-export type ProductInput = Omit<Product, 'id' | 'createdAt' | 'rating' | 'reviews'>;
+/** What the admin edits; summary fields (price, stock, size) are derived from `variants`. */
+export type ProductInput = Omit<Product, 'id' | 'createdAt' | 'rating' | 'reviews' | 'price' | 'oldPrice' | 'stock' | 'volumeMl' | 'unit'>;
 
 export type Role = 'admin' | 'client';
 
@@ -109,6 +132,7 @@ export interface User {
 
 export interface CartItem {
   productId: number;
+  variantId: string;
   qty: number;
 }
 
@@ -122,6 +146,11 @@ export interface OrderItem {
   name: string;
   brand: string;
   color: string;
+  /** Size bought (absent on orders placed before sizes existed) */
+  variantId?: string;
+  size?: number;
+  unit?: SizeUnit;
+  decant?: boolean;
   /** Unit price in USD at the time of the order */
   price: number;
   qty: number;

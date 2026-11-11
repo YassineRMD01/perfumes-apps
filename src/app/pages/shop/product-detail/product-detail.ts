@@ -14,7 +14,7 @@ import { I18nService } from '../../../core/i18n/i18n.service';
 import { I18N_PIPES } from '../../../core/i18n/pipes';
 import { ImageStore } from '../../../core/image-store.service';
 import { AuthService } from '../../../core/auth.service';
-import { ProductService } from '../../../core/product.service';
+import { defaultVariant, ProductService } from '../../../core/product.service';
 import { ReviewService } from '../../../core/review.service';
 import { WishlistService } from '../../../core/wishlist.service';
 import { Bottle } from '../../../shared/bottle/bottle';
@@ -49,7 +49,16 @@ export class ProductDetail {
     (this.product()?.images ?? []).map((ref) => this.images.resolve(ref)).filter((s): s is string => !!s),
   );
   protected readonly active = linkedSignal(() => (this.product(), 0));
-  protected readonly qty = linkedSignal(() => (this.product(), 1));
+  // Sizes
+  protected readonly bottles = computed(() => this.product()?.variants.filter((v) => v.type === 'bottle') ?? []);
+  protected readonly decants = computed(() => this.product()?.variants.filter((v) => v.type === 'decant') ?? []);
+  /** Selected size id; resets to the default size when the product changes */
+  protected readonly selectedId = linkedSignal(() => {
+    const p = this.product();
+    return p ? defaultVariant(p).id : '';
+  });
+  protected readonly selected = computed(() => this.product()?.variants.find((v) => v.id === this.selectedId()));
+  protected readonly qty = linkedSignal(() => (this.selectedId(), 1));
   protected readonly pyramid = computed(() => {
     const p = this.product();
     return p
@@ -62,7 +71,8 @@ export class ProductDetail {
   });
   protected readonly inCart = computed(() => {
     const p = this.product();
-    return p ? this.cart.lines().find((l) => l.product.id === p.id)?.qty ?? 0 : 0;
+    const v = this.selected();
+    return p && v ? this.cart.qtyOf(p.id, v.id) : 0;
   });
   protected readonly wished = computed(() => this.wishlist.ids().includes(Number(this.id())));
   protected readonly related = computed(() => {
@@ -108,8 +118,9 @@ export class ProductDetail {
 
   addToCart(): void {
     const p = this.product()!;
-    const added = this.cart.add(p.id, this.qty());
-    this.toast.add({ severity: 'success', summary: this.i18n.t('toast.addedToCart'), detail: `${added} × ${p.name}`, life: 2500 });
+    const v = this.selected()!;
+    const added = this.cart.add(p.id, v.id, this.qty());
+    this.toast.add({ severity: 'success', summary: this.i18n.t('toast.addedToCart'), detail: `${added} × ${p.name} · ${v.size} ${v.unit}`, life: 2500 });
     this.qty.set(1);
   }
 
