@@ -1,6 +1,6 @@
-# Lumora — Perfume Shop (Angular 22)
+# Lumora — Perfume & Cosmetics Shop (Angular 22)
 
-A front-end web app for selling perfumes, with a **client storefront** and an **admin back office**.
+A front-end web app for selling perfumes and cosmetics, with a **client storefront** and an **admin back office**.
 
 **Stack:** Angular 22 (standalone, signals, zoneless, new control flow) · Tailwind CSS 4 · PrimeNG 21 (MIT, Aura theme, amber preset) · Font Awesome (`@fortawesome/angular-fontawesome`)
 
@@ -28,6 +28,20 @@ shows a license banner unless a key is configured. PrimeNG 21 officially declare
 `package.json` has an npm `overrides` block that lets it run on Angular 22. The build and the main user flows were
 tested on that combination. Remove the `overrides` block if you downgrade to Angular 21.
 
+## Perfumes and cosmetics
+
+Every product is either a **perfume** or a **cosmetic**:
+
+- **Perfumes** have a concentration, an olfactory pyramid (top/heart/base notes) and a wear guide (below).
+- **Cosmetics** have suitable skin types, key ingredients, how-to-use instructions, a size in ml or g, and a packaging
+  shape (jar, tube, dropper, lipstick, compact, bottle) that is drawn when there is no photo.
+- Categories belong to one type (e.g. Floral or Woody for perfumes, Skincare or Makeup for cosmetics).
+- The header has Perfumes and Cosmetics links, and the shop has a type switch. Perfume filters (season, day/night,
+  longevity) or the cosmetic filter (skin type) appear depending on the selected type. The admin product form shows the
+  matching fields, and the products table can be filtered by type.
+- The demo catalog has 16 perfumes and 10 cosmetics from 7 brands. Older saved demo data gets the new cosmetics, brands
+  and categories added automatically, without touching your own changes.
+
 ## Perfume wear guide
 
 Every perfume has:
@@ -42,14 +56,17 @@ the admin product form, products table and CSV export.
 
 ## Brand & design
 
-**Lumora** (from *lumière*, light) is a fictional "maison de parfum". Its logo is an arch-shaped perfume bottle with a
-drop, drawn as an SVG in `shared/logo/` and as `public/favicon.svg`. The default design is light: warm ivory
-backgrounds, rose accent, Cormorant Garamond headings and Jost body text (Cairo for Arabic).
+**Lumora** (from *lumière*, light) is a fictional fragrance and beauty house. Its logo is an arch-shaped perfume bottle with a
+drop, drawn as an SVG in `shared/logo/` and as `public/favicon.svg`. The palette is **gold with white** (light mode)
+**or black** (dark mode), with Cormorant Garamond headings and Jost body text (Cairo for Arabic). The announcement bar
+and footer are a black band with gold text in both modes.
 
-- **Light / dark mode**: a toggle in the header for everyone (admin, clients, visitors), saved per visitor.
+- **Theme**: by default it follows the device setting (System) and updates live when the device switches. Anyone
+  (admin, clients, visitors) can choose System, Light or Dark from the header menu or the mobile menu; the choice is
+  saved per visitor.
   Colors are CSS tokens in `src/styles.css` (`bg-page`, `bg-surface`, `text-ink`, `text-muted`, `border-line`,
   `brand-*`…) that switch with the `.app-dark` class, along with PrimeNG's dark mode.
-- **Store branding (admin → Settings)**: store name, logo upload and accent color (6 presets or any custom color).
+- **Store branding (admin → Settings)**: store name, logo upload and accent color (Gold by default, 6 other presets or any custom color).
   The full 50–950 palette is generated from the accent and applied to PrimeNG and to the Tailwind `brand-*` tokens, so
   the whole storefront and back office update right away for every visitor. A live preview shows the change before
   saving.

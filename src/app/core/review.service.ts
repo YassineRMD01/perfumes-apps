@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { AuthService } from './auth.service';
-import { Perfume, Review } from './models';
+import { Product, Review } from './models';
 import { OrderService } from './order.service';
 import { SEED_REVIEWS } from './seed';
 import { load, persist } from './storage';
@@ -31,7 +31,7 @@ export class ReviewService {
    * Rating shown in the store: the perfume's historical rating (seed / imported) combined
    * with the reviews written on this site.
    */
-  stats(p: Pick<Perfume, 'id' | 'rating' | 'reviews'>): RatingStats {
+  stats(p: Pick<Product, 'id' | 'rating' | 'reviews'>): RatingStats {
     const own = this._reviews().filter((r) => r.productId === p.id);
     const count = p.reviews + own.length;
     if (!count) return { average: 0, count: 0 };

@@ -85,7 +85,7 @@
           <li class="flex items-center gap-3">
             <span class="w-4 text-sm font-bold text-faint">{{ idx + 1 }}</span>
             <div class="flex h-10 w-8 items-center justify-center overflow-hidden rounded">
-              <app-bottle class="h-full w-full" [color]="t.color" [name]="t.name" [image]="t.image" fit="cover" />
+              <app-bottle class="h-full w-full" [color]="t.color" [name]="t.name" [image]="t.image" [packaging]="t.packaging" fit="cover" />
             </div>
             <div class="flex-1 text-sm"><div class="font-medium">{{ t.name }}</div><div class="text-xs text-muted">{{ 'dash.sold' | t: { n: t.qty } }}</div></div>
             <span class="text-sm font-semibold">{{ t.revenue | money: true }}</span>

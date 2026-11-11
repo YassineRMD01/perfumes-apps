@@ -60,7 +60,7 @@
           @for (l of cart.lines(); track l.product.id) {
             <li class="flex items-center gap-3">
               <div class="flex h-14 w-12 items-center justify-center overflow-hidden rounded-lg bg-surface-2" [class.p-1]="!l.product.images.length">
-                <app-bottle class="h-full w-full" [color]="l.product.color" [name]="l.product.name" [brand]="l.product.brandId | brandName" [image]="l.product.images[0]" fit="cover" />
+                <app-bottle class="h-full w-full" [color]="l.product.color" [name]="l.product.name" [brand]="l.product.brandId | brandName" [image]="l.product.images[0]" [packaging]="l.product.packaging" fit="cover" />
               </div>
               <div class="flex-1 text-sm">
                 <div class="font-medium">{{ l.product.name }}</div>

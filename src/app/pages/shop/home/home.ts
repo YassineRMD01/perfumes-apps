@@ -29,7 +29,13 @@ export class Home {
   protected readonly i18n = inject(I18nService);
   protected readonly i = Icons;
 
-  protected readonly hero = computed(() => this.products.featured()[0] ?? this.products.products()[0]);
+  protected readonly hero = computed(() => this.products.featured().find((p) => p.kind === 'perfume') ?? this.products.products()[0]);
+  /** Featured cosmetics first, then the newest */
+  protected readonly beauty = computed(() =>
+    [...this.products.cosmetics()]
+      .sort((a, b) => Number(b.featured) - Number(a.featured) || b.createdAt.localeCompare(a.createdAt))
+      .slice(0, 4),
+  );
   protected readonly brands = computed(() =>
     this.catalog.brands().map((b) => ({ ...b, count: this.products.countByBrand(b.id), logoSrc: this.images.resolve(b.logo) })),
   );

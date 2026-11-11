@@ -1,27 +1,37 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { ImageStore } from './image-store.service';
-import { Perfume, PerfumeInput } from './models';
-import { SEED_PRODUCTS } from './seed';
-import { load, persist } from './storage';
+import { Product, ProductInput } from './models';
+import { CatalogService } from './catalog.service';
+import { SEED_BRANDS, SEED_PRODUCTS } from './seed';
+import { load, migrateOnce, persist } from './storage';
+
+/** Fill fields added in later versions (wear guide, cosmetics) on products saved earlier. */
+function normalize(p: Product): Product {
+  const seed = SEED_PRODUCTS.find((s) => s.id === p.id && s.name === p.name);
+  return {
+    ...p,
+    kind: p.kind ?? 'perfume',
+    unit: p.unit ?? 'ml',
+    longevity: p.longevity ?? seed?.longevity ?? 'Moderate',
+    seasons: p.seasons ?? seed?.seasons ?? ['Spring', 'Summer', 'Autumn', 'Winter'],
+    timeOfDay: p.timeOfDay ?? seed?.timeOfDay ?? 'Both',
+    skinTypes: p.skinTypes ?? [],
+    ingredients: p.ingredients ?? [],
+    howToUse: p.howToUse ?? '',
+    packaging: p.packaging ?? 'bottle',
+  };
+}
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private readonly imageStore = inject(ImageStore);
-  private readonly _products = signal<Perfume[]>(
-    // Products saved before the wear attributes existed get them from the seed (or sensible defaults)
-    load<Perfume[]>('products', SEED_PRODUCTS).map((p) => {
-      const seed = SEED_PRODUCTS.find((s) => s.id === p.id);
-      return {
-        ...p,
-        longevity: p.longevity ?? seed?.longevity ?? 'Moderate',
-        seasons: p.seasons ?? seed?.seasons ?? ['Spring', 'Summer', 'Autumn', 'Winter'],
-        timeOfDay: p.timeOfDay ?? seed?.timeOfDay ?? 'Both',
-      };
-    }),
-  );
+  private readonly catalog = inject(CatalogService);
+  private readonly _products = signal<Product[]>(load<Product[]>('products', SEED_PRODUCTS).map(normalize));
 
   readonly products = this._products.asReadonly();
   readonly featured = computed(() => this._products().filter((p) => p.featured));
+  readonly perfumes = computed(() => this._products().filter((p) => p.kind === 'perfume'));
+  readonly cosmetics = computed(() => this._products().filter((p) => p.kind === 'cosmetic'));
   readonly newArrivals = computed(() =>
     [...this._products()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 4),
   );
@@ -29,21 +39,34 @@ export class ProductService {
   readonly lowStock = computed(() => this._products().filter((p) => p.stock <= 5).sort((a, b) => a.stock - b.stock));
 
   constructor() {
+    if (migrateOnce('products-cosmetics-v1')) {
+      // Add the demo cosmetics to catalogs saved by an earlier version (ids/brands remapped if taken)
+      const list = this._products();
+      const taken = new Set(list.map((p) => p.id));
+      let nextId = Math.max(0, ...taken, ...SEED_PRODUCTS.map((p) => p.id));
+      const added = SEED_PRODUCTS.filter((p) => p.kind === 'cosmetic' && !list.some((x) => x.name === p.name)).map((p) => {
+        const brandName = SEED_BRANDS.find((b) => b.id === p.brandId)?.name ?? '';
+        const id = taken.has(p.id) ? ++nextId : p.id;
+        taken.add(id);
+        return { ...p, id, brandId: this.catalog.brandIdByName(brandName) ?? p.brandId };
+      });
+      if (added.length) this._products.set([...list, ...added]);
+    }
     persist('products', this._products);
   }
 
-  getById(id: number): Perfume | undefined {
+  getById(id: number): Product | undefined {
     return this._products().find((p) => p.id === id);
   }
 
-  create(input: PerfumeInput): Perfume {
+  create(input: ProductInput): Product {
     const id = Math.max(0, ...this._products().map((p) => p.id)) + 1;
-    const perfume: Perfume = { ...input, id, rating: 0, reviews: 0, createdAt: new Date().toISOString() };
+    const perfume: Product = { ...input, id, rating: 0, reviews: 0, createdAt: new Date().toISOString() };
     this._products.update((list) => [perfume, ...list]);
     return perfume;
   }
 
-  update(id: number, input: PerfumeInput): void {
+  update(id: number, input: ProductInput): void {
     const previous = this.getById(id);
     this._products.update((list) => list.map((p) => (p.id === id ? { ...p, ...input } : p)));
     // Free uploaded photos that were removed from the product
@@ -65,7 +88,7 @@ export class ProductService {
   }
 
   /** Resolved cover photo (or null to render the SVG bottle). */
-  cover(p: Pick<Perfume, 'images'> | undefined): string | null {
+  cover(p: Pick<Product, 'images'> | undefined): string | null {
     return this.imageStore.resolve(p?.images[0]);
   }
 

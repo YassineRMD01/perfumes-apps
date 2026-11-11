@@ -21,7 +21,8 @@ import { ImageStore } from '../../../core/image-store.service';
 import { CatalogService } from '../../../core/catalog.service';
 import { downloadCsv } from '../../../core/csv';
 import {
-  CONCENTRATIONS, Concentration, GENDERS, Gender, LONGEVITIES, Longevity, MAX_PHOTOS, Perfume, PerfumeInput, SEASONS, Season, TIMES_OF_DAY, TimeOfDay,
+  CONCENTRATIONS, Concentration, GENDERS, Gender, LONGEVITIES, Longevity, MAX_PHOTOS, PACKAGINGS, Packaging, Product, ProductInput, ProductKind,
+  SEASONS, Season, SizeUnit, SKIN_TYPES, SkinType, TIMES_OF_DAY, TimeOfDay,
 } from '../../../core/models';
 import { ProductService } from '../../../core/product.service';
 import { Bottle } from '../../../shared/bottle/bottle';
@@ -52,16 +53,20 @@ export class AdminProducts {
   protected readonly i = Icons;
 
   /** Table rows with resolved names so search and sorting work on what the admin sees. */
+  protected readonly tableKind = signal<ProductKind | null>(null);
   protected readonly rows = computed(() =>
-    this.products.products().map((p) => ({
+    this.products.products().filter((p) => !this.tableKind() || p.kind === this.tableKind()).map((p) => ({
       ...p,
       brandName: this.catalog.brandName(p.brandId),
       categoryName: this.catalog.categoryName(p.categoryId, this.i18n.lang()),
     })),
   );
 
+  /** Current product type in the form (drives the category list and visible fields) */
+  protected readonly kind = signal<ProductKind>('perfume');
+
   protected readonly dialogOpen = signal(false);
-  protected readonly editing = signal<Perfume | null>(null);
+  protected readonly editing = signal<Product | null>(null);
   protected readonly images = signal<string[]>([]);
   /** Photos uploaded while the dialog is open; deleted again if not kept. */
   protected uploadedThisSession: string[] = [];
@@ -70,8 +75,15 @@ export class AdminProducts {
   protected readonly genderOptions = computed(() => GENDERS.map((v) => ({ value: v, label: this.i18n.tv('gender', v) })));
   protected readonly catalog = inject(CatalogService);
   protected readonly categoryOptions = computed(() =>
-    this.catalog.categories().map((c) => ({ value: c.id, label: c.name[this.i18n.lang()] || c.name.en })),
+    this.catalog.categoriesOf(this.kind()).map((c) => ({ value: c.id, label: c.name[this.i18n.lang()] || c.name.en })),
   );
+  protected readonly kindOptions = computed(() => [
+    { value: 'perfume', label: this.i18n.t('kind.perfume') },
+    { value: 'cosmetic', label: this.i18n.t('kind.cosmetic') },
+  ]);
+  protected readonly packagingOptions = computed(() => PACKAGINGS.map((v) => ({ value: v, label: this.i18n.tv('pack', v) })));
+  protected readonly unitOptions: SizeUnit[] = ['ml', 'g'];
+  protected readonly skinList = SKIN_TYPES;
   protected readonly seasonList = SEASONS;
   protected readonly seasonIcons = SEASON_ICONS;
   protected readonly longevityOptions = computed(() => LONGEVITIES.map((v) => ({ value: v, label: this.i18n.tv('longevity', v) })));
@@ -79,25 +91,36 @@ export class AdminProducts {
   protected readonly concentrationOptions = computed(() => CONCENTRATIONS.map((v) => ({ value: v, label: this.i18n.tv('conc', v) })));
 
   protected readonly form = this.fb.group({
+    kind: this.fb.control<ProductKind>('perfume'),
     name: ['', Validators.required],
     brandId: this.fb.control<number | null>(null, Validators.required),
     description: ['', Validators.required],
     price: this.fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
     oldPrice: this.fb.control<number | null>(null),
     stock: [0, [Validators.required, Validators.min(0)]],
-    volumeMl: [100, [Validators.required, Validators.min(1)]],
+    volumeMl: [100, [Validators.required, Validators.min(0.1)]],
+    unit: this.fb.control<SizeUnit>('ml'),
     gender: this.fb.control<Gender>('Unisex'),
     categoryId: this.fb.control<string | null>(null, Validators.required),
     concentration: this.fb.control<Concentration>('EDP'),
     longevity: this.fb.control<Longevity>('Moderate'),
     seasons: this.fb.control<Season[]>(['Spring', 'Summer', 'Autumn', 'Winter'], (c) => (c.value?.length ? null : { required: true })),
     timeOfDay: this.fb.control<TimeOfDay>('Both'),
+    packaging: this.fb.control<Packaging>('jar'),
+    skinTypes: this.fb.control<SkinType[]>(['All']),
+    ingredients: [''],
+    howToUse: [''],
     color: ['#d6b38a'],
     featured: [false],
     topNotes: [''],
     heartNotes: [''],
     baseNotes: [''],
   });
+
+  toggleSkin(skin: SkinType): void {
+    const c = this.form.controls.skinTypes;
+    c.setValue(SKIN_TYPES.filter((s) => (s === skin ? !c.value.includes(s) : c.value.includes(s))));
+  }
 
   toggleSeason(season: Season): void {
     const c = this.form.controls.seasons;
@@ -110,13 +133,29 @@ export class AdminProducts {
   exportCsv(): void {
     downloadCsv(
       `products-${new Date().toISOString().slice(0, 10)}.csv`,
-      ['ID', 'Name', 'Brand', 'Category', 'Gender', 'Concentration', 'Volume (ml)', 'Price (USD)', 'Compare-at (USD)', 'Stock',
-       'Longevity', 'Seasons', 'Day/Night', 'Featured', 'Photos', 'Created'],
+      ['ID', 'Type', 'Name', 'Brand', 'Category', 'Gender', 'Concentration', 'Size', 'Unit', 'Price (USD)', 'Compare-at (USD)', 'Stock',
+       'Longevity', 'Seasons', 'Day/Night', 'Skin types', 'Ingredients', 'Featured', 'Photos', 'Created'],
       this.rows().map((p) => [
-        p.id, p.name, p.brandName, this.catalog.categoryName(p.categoryId, 'en'), p.gender, p.concentration, p.volumeMl, p.price,
-        p.oldPrice ?? '', p.stock, p.longevity, p.seasons.join(' / '), p.timeOfDay, p.featured ? 'yes' : 'no', p.images.length, p.createdAt.slice(0, 10),
+        p.id, p.kind, p.name, p.brandName, this.catalog.categoryName(p.categoryId, 'en'), p.gender, p.kind === 'perfume' ? p.concentration : '',
+        p.volumeMl, p.unit, p.price, p.oldPrice ?? '', p.stock,
+        ...(p.kind === 'perfume' ? [p.longevity, p.seasons.join(' / '), p.timeOfDay, '', ''] : ['', '', '', p.skinTypes.join(' / '), p.ingredients.join(' / ')]),
+        p.featured ? 'yes' : 'no', p.images.length, p.createdAt.slice(0, 10),
       ]),
     );
+  }
+
+  constructor() {
+    this.form.controls.kind.valueChanges.subscribe((kind) => {
+      this.kind.set(kind);
+      const cat = this.form.controls.categoryId.value;
+      if (cat && this.catalog.category(cat)?.kind !== kind) this.form.controls.categoryId.setValue(null);
+      // seasons are only required for perfumes
+      const seasons = this.form.controls.seasons;
+      if (kind === 'cosmetic') {
+        seasons.clearValidators();
+      } else seasons.setValidators((c) => (c.value?.length ? null : { required: true }));
+      seasons.updateValueAndValidity();
+    });
   }
 
   filter(dt: Table, e: Event): void {
@@ -128,7 +167,7 @@ export class AdminProducts {
     return c.invalid && c.touched;
   }
 
-  private open(p: Perfume | null): void {
+  private open(p: Product | null): void {
     this.editing.set(p);
     this.images.set(p ? [...p.images].slice(0, MAX_PHOTOS) : []);
     this.uploadedThisSession = [];
@@ -136,16 +175,19 @@ export class AdminProducts {
     this.dialogOpen.set(true);
   }
 
-  openNew(): void {
+  openNew(kind: ProductKind = 'perfume'): void {
     this.form.reset();
+    this.form.controls.kind.setValue(kind);
     this.open(null);
   }
 
-  openEdit(p: Perfume): void {
+  openEdit(p: Product): void {
     this.form.reset({
       ...p,
       oldPrice: p.oldPrice ?? null,
       seasons: [...p.seasons],
+      skinTypes: [...p.skinTypes],
+      ingredients: p.ingredients.join(', '),
       topNotes: p.topNotes.join(', '),
       heartNotes: p.heartNotes.join(', '),
       baseNotes: p.baseNotes.join(', '),
@@ -167,7 +209,7 @@ export class AdminProducts {
       return;
     }
     const v = this.form.getRawValue();
-    const input: PerfumeInput = {
+    const input: ProductInput = {
       ...v,
       brandId: v.brandId!,
       categoryId: v.categoryId!,
@@ -177,6 +219,7 @@ export class AdminProducts {
       topNotes: splitNotes(v.topNotes),
       heartNotes: splitNotes(v.heartNotes),
       baseNotes: splitNotes(v.baseNotes),
+      ingredients: splitNotes(v.ingredients),
     };
     const current = this.editing();
     if (current) {
@@ -190,7 +233,7 @@ export class AdminProducts {
     this.dialogOpen.set(false);
   }
 
-  remove(p: Perfume): void {
+  remove(p: Product): void {
     this.confirm.confirm({
       header: this.i18n.t('ap.deleteTitle'),
       message: this.i18n.t('ap.deleteMsg', { name: p.name }),

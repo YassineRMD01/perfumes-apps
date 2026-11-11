@@ -1,4 +1,7 @@
-import { Brand, Category, Coupon, Order, OrderStatus, Perfume, Review, User } from './models';
+import { Brand, Category, Coupon, Order, OrderStatus, Product, Review, User } from './models';
+
+type PerfumeSeed = Omit<Product, 'kind' | 'unit' | 'skinTypes' | 'ingredients' | 'howToUse' | 'packaging'>;
+type CosmeticSeed = Omit<Product, 'kind' | 'concentration' | 'topNotes' | 'heartNotes' | 'baseNotes' | 'longevity' | 'seasons' | 'timeOfDay'>;
 
 const d = (daysAgo: number) => new Date(Date.now() - daysAgo * 86_400_000).toISOString();
 
@@ -8,20 +11,26 @@ export const SEED_BRANDS: Brand[] = [
   { id: 3, name: 'Côte Sauvage', country: 'Portugal', description: 'Fresh coastal compositions inspired by the Atlantic.', logo: null, createdAt: d(380) },
   { id: 4, name: 'Velours & Co', country: 'Italy', description: 'Velvety skin scents with an Italian touch.', logo: null, createdAt: d(370) },
   { id: 5, name: 'Dar Al Oud', country: 'United Arab Emirates', description: 'Precious oud, amber and rose from Arabian tradition.', logo: null, createdAt: d(360) },
+  { id: 6, name: 'Rose & Argan', country: 'Morocco', description: 'Natural skincare made with Moroccan argan oil and Damask rose.', logo: null, createdAt: d(200) },
+  { id: 7, name: 'Soie Botanique', country: 'France', description: 'Clean makeup and skincare with silky botanical textures.', logo: null, createdAt: d(190) },
 ];
 
 const t = (en: string, fr: string, es: string, ar: string) => ({ en, fr, es, ar });
 
 export const SEED_CATEGORIES: Category[] = [
-  { id: 'floral', name: t('Floral', 'Floral', 'Floral', 'زهري'), description: t('Rose, jasmine, peony', 'Rose, jasmin, pivoine', 'Rosa, jazmín, peonía', 'ورد، ياسمين، فاوانيا'), color: '#e9a0b4', createdAt: d(400) },
-  { id: 'woody', name: t('Woody', 'Boisé', 'Amaderado', 'خشبي'), description: t('Cedar, sandalwood, vetiver', 'Cèdre, santal, vétiver', 'Cedro, sándalo, vetiver', 'أرز، صندل، نجيل الهند'), color: '#c4a27e', createdAt: d(400) },
-  { id: 'oriental', name: t('Oriental', 'Oriental', 'Oriental', 'شرقي'), description: t('Oud, amber, spices', 'Oud, ambre, épices', 'Oud, ámbar, especias', 'عود، عنبر، توابل'), color: '#d9907a', createdAt: d(400) },
-  { id: 'fresh', name: t('Fresh', 'Frais', 'Fresco', 'منعش'), description: t('Marine, green, aromatic', 'Marin, vert, aromatique', 'Marino, verde, aromático', 'بحري، أخضر، عطري'), color: '#8cc3c9', createdAt: d(400) },
-  { id: 'citrus', name: t('Citrus', 'Hespéridé', 'Cítrico', 'حمضي'), description: t('Lemon, bergamot, neroli', 'Citron, bergamote, néroli', 'Limón, bergamota, neroli', 'ليمون، برغموت، نيرولي'), color: '#e6c86e', createdAt: d(400) },
-  { id: 'gourmand', name: t('Gourmand', 'Gourmand', 'Gourmand', 'حلو'), description: t('Vanilla, caramel, cocoa', 'Vanille, caramel, cacao', 'Vainilla, caramelo, cacao', 'فانيليا، كراميل، كاكاو'), color: '#d8a878', createdAt: d(400) },
+  { id: 'floral', kind: 'perfume', name: t('Floral', 'Floral', 'Floral', 'زهري'), description: t('Rose, jasmine, peony', 'Rose, jasmin, pivoine', 'Rosa, jazmín, peonía', 'ورد، ياسمين، فاوانيا'), color: '#e9a0b4', createdAt: d(400) },
+  { id: 'woody', kind: 'perfume', name: t('Woody', 'Boisé', 'Amaderado', 'خشبي'), description: t('Cedar, sandalwood, vetiver', 'Cèdre, santal, vétiver', 'Cedro, sándalo, vetiver', 'أرز، صندل، نجيل الهند'), color: '#c4a27e', createdAt: d(400) },
+  { id: 'oriental', kind: 'perfume', name: t('Oriental', 'Oriental', 'Oriental', 'شرقي'), description: t('Oud, amber, spices', 'Oud, ambre, épices', 'Oud, ámbar, especias', 'عود، عنبر، توابل'), color: '#d9907a', createdAt: d(400) },
+  { id: 'fresh', kind: 'perfume', name: t('Fresh', 'Frais', 'Fresco', 'منعش'), description: t('Marine, green, aromatic', 'Marin, vert, aromatique', 'Marino, verde, aromático', 'بحري، أخضر، عطري'), color: '#8cc3c9', createdAt: d(400) },
+  { id: 'citrus', kind: 'perfume', name: t('Citrus', 'Hespéridé', 'Cítrico', 'حمضي'), description: t('Lemon, bergamot, neroli', 'Citron, bergamote, néroli', 'Limón, bergamota, neroli', 'ليمون، برغموت، نيرولي'), color: '#e6c86e', createdAt: d(400) },
+  { id: 'gourmand', kind: 'perfume', name: t('Gourmand', 'Gourmand', 'Gourmand', 'حلو'), description: t('Vanilla, caramel, cocoa', 'Vanille, caramel, cacao', 'Vainilla, caramelo, cacao', 'فانيليا، كراميل، كاكاو'), color: '#d8a878', createdAt: d(400) },
+  { id: 'skincare', kind: 'cosmetic', name: t('Skincare', 'Soins du visage', 'Cuidado facial', 'العناية بالبشرة'), description: t('Serums, creams, face oils', 'Sérums, crèmes, huiles', 'Sérums, cremas, aceites', 'سيروم، كريمات، زيوت'), color: '#e9c46a', createdAt: d(200) },
+  { id: 'makeup', kind: 'cosmetic', name: t('Makeup', 'Maquillage', 'Maquillaje', 'المكياج'), description: t('Lips, complexion, eyes', 'Lèvres, teint, yeux', 'Labios, tez, ojos', 'الشفاه، البشرة، العيون'), color: '#d98b8b', createdAt: d(200) },
+  { id: 'body', kind: 'cosmetic', name: t('Body care', 'Soins du corps', 'Cuidado corporal', 'العناية بالجسم'), description: t('Butters, gels, hand creams', 'Beurres, gels, crèmes mains', 'Mantecas, geles, cremas de manos', 'زبدة، جل، كريم اليدين'), color: '#d6a97c', createdAt: d(200) },
+  { id: 'hair', kind: 'cosmetic', name: t('Hair care', 'Soins des cheveux', 'Cuidado del cabello', 'العناية بالشعر'), description: t('Masks, oils, hair mists', 'Masques, huiles, brumes', 'Mascarillas, aceites, brumas', 'أقنعة، زيوت، رذاذ الشعر'), color: '#b9a37a', createdAt: d(200) },
 ];
 
-export const SEED_PRODUCTS: Perfume[] = [
+const PERFUME_SEEDS: PerfumeSeed[] = [
   { id: 1, name: 'Rose Éternelle', brandId: 1, description: 'A luminous bouquet of Damask rose wrapped in soft musk and a whisper of lychee. Romantic, radiant and timeless.', price: 128, oldPrice: 150, stock: 24, volumeMl: 100, gender: 'Women', categoryId: 'floral', concentration: 'EDP', topNotes: ['Lychee', 'Pink pepper'], heartNotes: ['Damask rose', 'Peony'], baseNotes: ['White musk', 'Cedar'], longevity: 'Long', seasons: ['Spring', 'Summer'], timeOfDay: 'Day', color: '#f9a8d4', rating: 4.8, reviews: 214, images: [], featured: true, createdAt: d(120) },
   { id: 2, name: 'Noir Absolu', brandId: 2, description: 'Smoky oud and leather meet dark vanilla in this nocturnal signature. Bold, magnetic and long-lasting.', price: 185, stock: 12, volumeMl: 75, gender: 'Men', categoryId: 'oriental', concentration: 'Parfum', topNotes: ['Saffron', 'Black pepper'], heartNotes: ['Leather', 'Oud'], baseNotes: ['Vanilla', 'Amber'], longevity: 'VeryLong', seasons: ['Autumn', 'Winter'], timeOfDay: 'Night', color: '#44403c', rating: 4.9, reviews: 167, images: [], featured: true, createdAt: d(200) },
   { id: 3, name: 'Sel Marin', brandId: 3, description: 'Salty sea breeze, sun-warmed driftwood and crushed sage. The scent of an endless summer on the Atlantic coast.', price: 96, stock: 40, volumeMl: 100, gender: 'Unisex', categoryId: 'fresh', concentration: 'EDT', topNotes: ['Sea salt', 'Bergamot'], heartNotes: ['Sage', 'Seaweed'], baseNotes: ['Driftwood', 'Ambergris'], longevity: 'Moderate', seasons: ['Spring', 'Summer'], timeOfDay: 'Day', color: '#7dd3fc', rating: 4.6, reviews: 302, images: [], featured: true, createdAt: d(90) },
@@ -39,6 +48,27 @@ export const SEED_PRODUCTS: Perfume[] = [
   { id: 15, name: 'Cacao Noir', brandId: 5, description: 'Dark cocoa, coffee and patchouli on a bed of smoky vanilla. A daring gourmand for the bold.', price: 124, oldPrice: 140, stock: 16, volumeMl: 75, gender: 'Men', categoryId: 'gourmand', concentration: 'EDP', topNotes: ['Coffee', 'Pink pepper'], heartNotes: ['Dark cocoa', 'Iris'], baseNotes: ['Patchouli', 'Vanilla'], longevity: 'VeryLong', seasons: ['Autumn', 'Winter'], timeOfDay: 'Night', color: '#7c2d12', rating: 4.7, reviews: 71, images: [], featured: false, createdAt: d(35) },
   { id: 16, name: 'Lavande Sauvage', brandId: 3, description: 'Wild Provençal lavender, rosemary and a soft tonka base. Aromatic, calming and fresh.', price: 84, stock: 3, volumeMl: 100, gender: 'Unisex', categoryId: 'fresh', concentration: 'EDT', topNotes: ['Rosemary', 'Lemon'], heartNotes: ['Lavender', 'Thyme'], baseNotes: ['Tonka', 'Cedar'], longevity: 'Moderate', seasons: ['Spring', 'Summer', 'Autumn'], timeOfDay: 'Both', color: '#c4b5fd', rating: 4.5, reviews: 58, images: [], featured: false, createdAt: d(55) },
 ];
+
+const COSMETIC_SEEDS: CosmeticSeed[] = [
+  { id: 17, name: 'Argan Glow Face Oil', brandId: 6, categoryId: 'skincare', description: 'A featherlight dry oil of cold-pressed argan and rosehip that leaves skin soft, nourished and glowing.', price: 48, stock: 30, volumeMl: 30, unit: 'ml', gender: 'Unisex', skinTypes: ['Dry', 'Combination'], ingredients: ['Organic argan oil', 'Rosehip oil', 'Vitamin E'], howToUse: 'Warm 3–4 drops between your palms and press onto clean skin, morning and evening.', packaging: 'dropper', color: '#e3b75c', images: [], rating: 4.8, reviews: 96, featured: true, createdAt: d(20) },
+  { id: 18, name: 'Rose Petal Day Cream', brandId: 6, categoryId: 'skincare', description: 'A velvety moisturiser with Damask rose water and hyaluronic acid for 24-hour hydration.', price: 39, stock: 42, volumeMl: 50, unit: 'ml', gender: 'Women', skinTypes: ['All'], ingredients: ['Damask rose water', 'Hyaluronic acid', 'Shea butter'], howToUse: 'Apply every morning to face and neck after cleansing.', packaging: 'jar', color: '#f2c4c8', images: [], rating: 4.6, reviews: 74, featured: false, createdAt: d(32) },
+  { id: 19, name: 'Velvet Matte Lipstick', brandId: 7, categoryId: 'makeup', description: 'A creamy matte lipstick in “Rouge Lumière”, a timeless red that stays comfortable all day.', price: 26, stock: 55, volumeMl: 3.5, unit: 'g', gender: 'Women', skinTypes: ['All'], ingredients: ['Jojoba oil', 'Vitamin E', 'Plant waxes'], howToUse: 'Apply from the centre of the lips outwards. Layer for more intensity.', packaging: 'lipstick', color: '#b3243b', images: [], rating: 4.7, reviews: 131, featured: true, createdAt: d(12) },
+  { id: 20, name: 'Silk Finish Pressed Powder', brandId: 7, categoryId: 'makeup', description: 'A translucent powder with silk extracts that blurs shine for a soft-focus finish.', price: 34, stock: 20, volumeMl: 9, unit: 'g', gender: 'Women', skinTypes: ['Oily', 'Combination'], ingredients: ['Silk powder', 'Rice starch'], howToUse: 'Sweep lightly over the T-zone with the puff or a large brush.', packaging: 'compact', color: '#e8c7a8', images: [], rating: 4.4, reviews: 58, featured: false, createdAt: d(44) },
+  { id: 21, name: 'Amber Body Butter', brandId: 6, categoryId: 'body', description: 'A rich whipped butter scented with warm amber that melts into dry skin.', price: 32, stock: 26, volumeMl: 200, unit: 'ml', gender: 'Unisex', skinTypes: ['Dry', 'Sensitive'], ingredients: ['Shea butter', 'Argan oil', 'Amber accord'], howToUse: 'Massage generously into skin after showering.', packaging: 'jar', color: '#e8a85c', images: [], rating: 4.8, reviews: 112, featured: false, createdAt: d(60) },
+  { id: 22, name: 'Oud Shower Gel', brandId: 5, categoryId: 'body', description: 'A gentle cleansing gel with the smoky signature of Cambodian oud.', price: 24, stock: 48, volumeMl: 250, unit: 'ml', gender: 'Men', skinTypes: ['All'], ingredients: ['Oud extract', 'Aloe vera', 'Glycerin'], howToUse: 'Lather onto wet skin and rinse thoroughly.', packaging: 'tube', color: '#7a4a32', images: [], rating: 4.5, reviews: 39, featured: false, createdAt: d(25) },
+  { id: 23, name: 'Néroli Hand Cream', brandId: 4, categoryId: 'body', description: 'A fast-absorbing hand cream with neroli water and sweet almond oil.', price: 18, stock: 64, volumeMl: 75, unit: 'ml', gender: 'Unisex', skinTypes: ['All'], ingredients: ['Neroli water', 'Sweet almond oil', 'Glycerin'], howToUse: 'Apply to hands as often as needed.', packaging: 'tube', color: '#f3dc9a', images: [], rating: 4.6, reviews: 87, featured: false, createdAt: d(8) },
+  { id: 24, name: 'Vitamin C Brightening Serum', brandId: 7, categoryId: 'skincare', description: 'A 15% vitamin C serum that evens skin tone and boosts radiance.', price: 54, stock: 18, volumeMl: 30, unit: 'ml', gender: 'Unisex', skinTypes: ['All'], ingredients: ['Vitamin C 15%', 'Ferulic acid', 'Niacinamide'], howToUse: 'Apply 3 drops in the morning before moisturiser. Follow with sunscreen.', packaging: 'dropper', color: '#f2a93b', images: [], rating: 4.7, reviews: 143, featured: true, createdAt: d(4) },
+  { id: 25, name: 'Repairing Argan Hair Mask', brandId: 6, categoryId: 'hair', description: 'A deep conditioning mask that repairs and softens dry, damaged hair.', price: 29, stock: 4, volumeMl: 250, unit: 'ml', gender: 'Unisex', skinTypes: [], ingredients: ['Argan oil', 'Keratin', 'Shea butter'], howToUse: 'Apply to damp hair, leave on for 5–10 minutes, then rinse.', packaging: 'jar', color: '#c99a5b', images: [], rating: 4.6, reviews: 51, featured: false, createdAt: d(50) },
+  { id: 26, name: 'Silk Hair Mist', brandId: 1, categoryId: 'hair', description: 'A delicate hair perfume with rose and silk proteins that adds shine.', price: 38, stock: 22, volumeMl: 50, unit: 'ml', gender: 'Women', skinTypes: [], ingredients: ['Rose extract', 'Silk proteins'], howToUse: 'Mist over dry hair from about 20 cm.', packaging: 'bottle', color: '#f4c3d6', images: [], rating: 4.5, reviews: 33, featured: false, createdAt: d(15) },
+];
+
+const perfume = (p: PerfumeSeed): Product => ({ ...p, kind: 'perfume', unit: 'ml', skinTypes: [], ingredients: [], howToUse: '', packaging: 'bottle' });
+const cosmetic = (p: CosmeticSeed): Product => ({
+  ...p, kind: 'cosmetic', concentration: 'EDP', topNotes: [], heartNotes: [], baseNotes: [], longevity: 'Moderate', seasons: [], timeOfDay: 'Both',
+});
+
+export const SEED_PRODUCTS: Product[] = [...PERFUME_SEEDS.map(perfume), ...COSMETIC_SEEDS.map(cosmetic)];
+
 
 export const SEED_USERS: User[] = [
   { id: 1, name: 'Admin Lumora', email: 'admin@lumora.shop', password: 'admin123', role: 'admin', createdAt: d(365) },

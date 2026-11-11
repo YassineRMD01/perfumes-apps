@@ -15,7 +15,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { downloadCsv } from '../../../core/csv';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { I18N_PIPES } from '../../../core/i18n/pipes';
-import { Order, ORDER_STATUSES, OrderStatus, severityOf, STATUS_SEVERITY } from '../../../core/models';
+import { Order, ORDER_STATUSES, OrderStatus, severityOf, STATUS_SEVERITY, Packaging } from '../../../core/models';
 import { OrderService } from '../../../core/order.service';
 import { ProductService } from '../../../core/product.service';
 import { Bottle } from '../../../shared/bottle/bottle';
@@ -58,6 +58,10 @@ export class AdminOrders {
         (!term || o.id.toLowerCase().includes(term) || o.customerName.toLowerCase().includes(term) || o.email.toLowerCase().includes(term)),
     );
   });
+
+  protected pack(productId: number): Packaging {
+    return this.products.getById(productId)?.packaging ?? 'bottle';
+  }
 
   protected photo(productId: number): string | undefined {
     return this.products.getById(productId)?.images[0];

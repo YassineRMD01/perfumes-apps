@@ -9,7 +9,7 @@ import { CatalogService } from '../../core/catalog.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { I18N_PIPES } from '../../core/i18n/pipes';
 import { ImageStore } from '../../core/image-store.service';
-import { Perfume } from '../../core/models';
+import { Product } from '../../core/models';
 import { ReviewService } from '../../core/review.service';
 import { WishlistService } from '../../core/wishlist.service';
 import { Bottle } from '../bottle/bottle';
@@ -24,7 +24,7 @@ import { WearGuide } from '../wear-guide/wear-guide';
   styleUrl: './product-card.css',
 })
 export class ProductCard {
-  readonly product = input.required<Perfume>();
+  readonly product = input.required<Product>();
 
   private readonly cart = inject(CartService);
   private readonly wishlist = inject(WishlistService);

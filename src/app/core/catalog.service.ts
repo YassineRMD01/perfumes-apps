@@ -1,8 +1,8 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { ImageStore } from './image-store.service';
-import { Brand, Category, Lang } from './models';
+import { Brand, Category, Lang, ProductKind } from './models';
 import { SEED_BRANDS, SEED_CATEGORIES } from './seed';
-import { load, persist } from './storage';
+import { load, migrateOnce, persist } from './storage';
 
 const slugify = (s: string) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'category';
@@ -12,14 +12,39 @@ const slugify = (s: string) =>
 export class CatalogService {
   private readonly images = inject(ImageStore);
   private readonly _brands = signal<Brand[]>(load('brands', SEED_BRANDS));
-  private readonly _categories = signal<Category[]>(load('categories', SEED_CATEGORIES));
+  private readonly _categories = signal<Category[]>(
+    // categories saved before cosmetics existed are perfume categories
+    load<Category[]>('categories', SEED_CATEGORIES).map((c) => ({ ...c, kind: c.kind ?? 'perfume' })),
+  );
 
   readonly brands = computed(() => [...this._brands()].sort((a, b) => a.name.localeCompare(b.name)));
   readonly categories = this._categories.asReadonly();
 
   constructor() {
+    if (migrateOnce('catalog-cosmetics-v1')) {
+      // Add the cosmetic brands and categories to data saved by an earlier version
+      const brands = [...this._brands()];
+      const taken = new Set(brands.map((b) => b.id));
+      let nextId = Math.max(0, ...taken, ...SEED_BRANDS.map((b) => b.id));
+      for (const b of SEED_BRANDS.filter((seed) => !brands.some((x) => x.name === seed.name))) {
+        const id = taken.has(b.id) ? ++nextId : b.id;
+        taken.add(id);
+        brands.push({ ...b, id });
+      }
+      this._brands.set(brands);
+      const cats = this._categories();
+      this._categories.set([...cats, ...SEED_CATEGORIES.filter((c) => !cats.some((x) => x.id === c.id))]);
+    }
     persist('brands', this._brands);
     persist('categories', this._categories);
+  }
+
+  categoriesOf(kind: ProductKind | null): Category[] {
+    return kind ? this._categories().filter((c) => c.kind === kind) : this._categories();
+  }
+
+  brandIdByName(name: string): number | undefined {
+    return this._brands().find((b) => b.name === name)?.id;
   }
 
   // ---- Brands ----

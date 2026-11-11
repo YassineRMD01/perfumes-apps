@@ -16,6 +16,15 @@
       </p-iconfield>
     </div>
     <div>
+      <label class="field-label">{{ 'shop.type' | t }}</label>
+      <div class="flex flex-wrap gap-2" role="radiogroup">
+        @for (o of kindOptions(); track o.label) {
+          <button type="button" role="radio" class="chip" [class.selected]="kind() === o.value" [attr.aria-checked]="kind() === o.value"
+                  (click)="setKind(o.value)">{{ o.label }}</button>
+        }
+      </div>
+    </div>
+    <div>
       <label class="field-label">{{ 'shop.for' | t }}</label>
       <div class="flex flex-wrap gap-2" role="radiogroup">
         @for (o of genderOptions(); track o.value) {
@@ -27,7 +36,7 @@
     <div>
       <label class="field-label">{{ 'shop.family' | t }}</label>
       <div class="grid grid-cols-2 gap-2">
-        @for (c of catalog.categories(); track c.id) {
+        @for (c of visibleCategories(); track c.id) {
           <label class="flex cursor-pointer items-center gap-2 text-sm">
             <p-checkbox [value]="c.id" [(ngModel)]="selectedCategories" />{{ c.id | categoryName }}
           </label>
@@ -46,6 +55,18 @@
       </div>
       <p-slider dir="ltr" [(ngModel)]="price" [range]="true" [min]="0" [max]="products.maxPrice()" [step]="5" class="mx-2 block" />
     </div>
+    @if (kind() === 'cosmetic') {
+    <div>
+      <label class="field-label">{{ 'cos.skinType' | t }}</label>
+      <div class="flex flex-wrap gap-2">
+        @for (sk of skinTypes; track sk) {
+          <button type="button" class="chip" [class.selected]="selectedSkin().includes(sk)" [attr.aria-pressed]="selectedSkin().includes(sk)"
+                  (click)="toggleSkin(sk)">{{ sk | tv: 'skin' }}</button>
+        }
+      </div>
+    </div>
+    }
+    @if (kind() === 'perfume') {
     <div>
       <label class="field-label">{{ 'shop.season' | t }}</label>
       <div class="flex flex-wrap gap-2">
@@ -67,6 +88,7 @@
       <label class="field-label">{{ 'shop.longevity' | t }}</label>
       <p-select [options]="longevityOptions()" optionLabel="label" optionValue="value" [(ngModel)]="minLongevity" [placeholder]="'shop.anyLongevity' | t" class="w-full" appendTo="body" />
     </div>
+    }
     <label class="flex items-center justify-between text-sm font-medium text-ink">
       {{ 'shop.inStock' | t }} <p-toggleswitch [(ngModel)]="inStockOnly" />
     </label>

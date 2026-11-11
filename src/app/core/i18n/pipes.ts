@@ -21,7 +21,7 @@ export class TranslateValuePipe implements PipeTransform {
   private readonly i18n = inject(I18nService);
   transform(
     value: string,
-    prefix: 'gender' | 'conc' | 'status' | 'payment' | 'seg' | 'cur' | 'accent' | 'sort' | 'longevity' | 'longevityShort' | 'season' | 'time',
+    prefix: 'gender' | 'conc' | 'status' | 'payment' | 'seg' | 'cur' | 'accent' | 'sort' | 'longevity' | 'longevityShort' | 'season' | 'time' | 'kind' | 'skin' | 'pack',
   ): string {
     return this.i18n.tv(prefix, value);
   }

@@ -6,9 +6,8 @@
   padding: 0.5rem 1rem;
   text-align: center;
   font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  background: var(--color-brand-soft);
-  color: var(--color-brand-ink);
+  letter-spacing: 0.08em;
+  color: var(--color-brand-300);
 }
 
 .header {
@@ -58,8 +57,7 @@
 
 .footer {
   margin-top: 5rem;
-  border-top: 1px solid var(--color-line);
-  background: var(--color-surface-2);
+  border-top: 1px solid var(--color-brand-700);
 }
 
 .footer-title {

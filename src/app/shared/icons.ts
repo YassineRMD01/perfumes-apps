@@ -3,7 +3,7 @@ import {
   faChartLine, faCheck, faCircleCheck, faCreditCard, faEye, faFilter, faGauge, faGem, faHeart as faHeartSolid,
   faLeaf, faLock, faMagnifyingGlass, faMinus, faMoneyBillWave, faPen, faPlus, faReceipt, faRightFromBracket,
   faRightToBracket, faRotateLeft, faShieldHalved, faSprayCanSparkles, faStar, faStore, faTrash, faTriangleExclamation,
-  faTruckFast, faUser, faUserPlus, faUsers, faXmark, faFire, faWandMagicSparkles, faDroplet, faGlobe, faImage, faCloudArrowUp, faChevronLeft, faChevronRight, faLink, faSpinner, faMoon, faSun, faCoins, faTags, faLayerGroup, faGear, faCrown, faSeedling, faSnowflake, faClock, faTicket, faDownload, faIdCard, faComment, faCircleHalfStroke, faStarHalfStroke, faUserPen, faKey, faLocationDot,
+  faTruckFast, faUser, faUserPlus, faUsers, faXmark, faFire, faWandMagicSparkles, faDroplet, faGlobe, faImage, faCloudArrowUp, faChevronLeft, faChevronRight, faLink, faSpinner, faMoon, faSun, faCoins, faTags, faLayerGroup, faGear, faCrown, faSeedling, faSnowflake, faClock, faTicket, faDownload, faIdCard, faComment, faCircleHalfStroke, faStarHalfStroke, faUserPen, faKey, faLocationDot, faDesktop, faPumpSoap, faSprayCan,
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular, faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
 import { faFacebookF, faInstagram, faPinterestP, faTiktok } from '@fortawesome/free-brands-svg-icons';
@@ -79,7 +79,10 @@ export const Icons = {
   starOutline: faStarRegular,
   userPen: faUserPen,
   key: faKey,
-  location: faLocationDot, faSeedling, faSnowflake, faClock, faTicket, faDownload, faIdCard, faComment, faCircleHalfStroke, faStarHalfStroke, faUserPen, faKey, faLocationDot,
+  location: faLocationDot,
+  desktop: faDesktop,
+  soap: faPumpSoap,
+  perfume: faSprayCan, faSeedling, faSnowflake, faClock, faTicket, faDownload, faIdCard, faComment, faCircleHalfStroke, faStarHalfStroke, faUserPen, faKey, faLocationDot, faDesktop, faPumpSoap, faSprayCan,
   facebook: faFacebookF,
   instagram: faInstagram,
   pinterest: faPinterestP,

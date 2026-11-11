@@ -5,11 +5,12 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { SelectButtonModule } from 'primeng/selectbutton';
 import { TooltipModule } from 'primeng/tooltip';
 import { CatalogService } from '../../../core/catalog.service';
 import { I18nService, LANGUAGES } from '../../../core/i18n/i18n.service';
 import { I18N_PIPES } from '../../../core/i18n/pipes';
-import { Category, Lang, Translated } from '../../../core/models';
+import { Category, Lang, PRODUCT_KINDS, ProductKind, Translated } from '../../../core/models';
 import { ProductService } from '../../../core/product.service';
 import { Icons } from '../../../shared/icons';
 
@@ -18,7 +19,7 @@ const empty = (): Translated => ({ en: '', fr: '', es: '', ar: '' });
 @Component({
   selector: 'app-admin-categories',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, FaIconComponent, ButtonModule, DialogModule, InputTextModule, TooltipModule, ...I18N_PIPES],
+  imports: [FormsModule, FaIconComponent, ButtonModule, DialogModule, InputTextModule, SelectButtonModule, TooltipModule, ...I18N_PIPES],
   templateUrl: './categories.html',
   styleUrl: './categories.css',
 })
@@ -31,9 +32,14 @@ export class AdminCategories {
   protected readonly i = Icons;
   protected readonly languages = LANGUAGES;
 
-  protected readonly cards = computed(() =>
-    this.catalog.categories().map((c) => ({ ...c, count: this.products.countByCategory(c.id) })),
+  protected readonly groups = computed(() =>
+    PRODUCT_KINDS.map((kind) => ({
+      kind,
+      cards: this.catalog.categoriesOf(kind).map((c) => ({ ...c, count: this.products.countByCategory(c.id) })),
+    })),
   );
+  protected readonly kindOptions = computed(() => PRODUCT_KINDS.map((k) => ({ value: k, label: this.i18n.tv('kind', k) })));
+  protected kind: ProductKind = 'perfume';
 
   protected readonly dialogOpen = signal(false);
   protected readonly editing = signal<Category | null>(null);
@@ -42,12 +48,19 @@ export class AdminCategories {
   protected description: Translated = empty();
   protected color = '#e9a0b4';
 
+  /** A category that already has products keeps its type */
+  protected hasProducts(): boolean {
+    const c = this.editing();
+    return !!c && this.products.countByCategory(c.id) > 0;
+  }
+
   protected label(c: Category): string {
     return c.name[this.i18n.lang()] || c.name.en;
   }
 
-  open(category: Category | null): void {
+  open(category: Category | null, kind: ProductKind = 'perfume'): void {
     this.editing.set(category);
+    this.kind = category?.kind ?? kind;
     this.name = category ? { ...category.name } : empty();
     this.description = category ? { ...category.description } : empty();
     this.color = category?.color ?? '#e9a0b4';
@@ -62,7 +75,7 @@ export class AdminCategories {
     // Missing translations fall back to English
     const fill = (t: Translated, fallback: string): Translated =>
       Object.fromEntries((Object.keys(t) as Lang[]).map((l) => [l, t[l].trim() || fallback])) as Translated;
-    const input = { name: fill(this.name, en), description: fill(this.description, this.description.en.trim()), color: this.color };
+    const input = { name: fill(this.name, en), description: fill(this.description, this.description.en.trim()), color: this.color, kind: this.kind };
     const current = this.editing();
     if (current) this.catalog.updateCategory(current.id, input);
     else this.catalog.createCategory(input);

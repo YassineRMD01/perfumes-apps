@@ -3,16 +3,32 @@
 }
 
 .toggle {
+  position: relative;
   display: grid;
   width: 2.5rem;
   height: 2.5rem;
   place-items: center;
   border-radius: 9999px;
   color: var(--color-ink);
-  transition: background-color 0.2s, transform 0.3s;
+  transition: background-color 0.2s;
 }
 
 .toggle:hover {
   background: var(--color-surface-2);
-  transform: rotate(-12deg);
+}
+
+/* small "A" (auto) badge when following the system setting */
+.auto-dot {
+  position: absolute;
+  inset-inline-end: 0.2rem;
+  bottom: 0.2rem;
+  display: grid;
+  width: 0.95rem;
+  height: 0.95rem;
+  place-items: center;
+  border-radius: 9999px;
+  background: var(--color-brand-500);
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #111;
 }

@@ -1,5 +1,15 @@
-<button type="button" class="toggle" (click)="theme.toggle()" role="switch" [attr.aria-checked]="theme.isDark()"
-        [attr.aria-label]="(theme.isDark() ? 'pref.switchToLight' : 'pref.switchToDark') | t"
-        [title]="(theme.isDark() ? 'pref.switchToLight' : 'pref.switchToDark') | t">
-  <fa-icon [icon]="theme.isDark() ? i.sun : i.moon" />
+<button type="button" class="toggle" (click)="menu.toggle($event)" aria-haspopup="true"
+        [attr.aria-label]="('pref.theme' | t) + ': ' + (theme.preference() === 'system' ? ('pref.system' | t) : theme.isDark() ? ('pref.dark' | t) : ('pref.light' | t))"
+        [title]="'pref.theme' | t">
+  <fa-icon [icon]="theme.isDark() ? i.moon : i.sun" />
+  @if (theme.preference() === 'system') { <span class="auto-dot" aria-hidden="true">A</span> }
 </button>
+<p-menu #menu [model]="items()" [popup]="true" appendTo="body">
+  <ng-template #item let-item>
+    <a class="p-menu-item-link flex items-center gap-3">
+      <fa-icon [icon]="iconFor(item.state.pref)" class="w-4 text-brand-500" />
+      <span class="flex-1" [class.font-semibold]="item.state.active">{{ item.label }}</span>
+      @if (item.state.active) { <fa-icon [icon]="i.check" class="text-brand-500" /> }
+    </a>
+  </ng-template>
+</p-menu>

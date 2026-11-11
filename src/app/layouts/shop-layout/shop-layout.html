@@ -1,5 +1,5 @@
 <div class="flex min-h-screen flex-col">
-  <div class="announce">
+  <div class="announce on-dark">
     <fa-icon [icon]="i.truck" class="me-2" />
     {{ 'announce' | t: { amount: (cart.freeShippingThreshold() | money: true) } }}
   </div>
@@ -12,7 +12,7 @@
 
       <a routerLink="/" [attr.aria-label]="'nav.home' | t"><app-logo /></a>
 
-      <nav class="ms-8 hidden items-center gap-7 lg:flex">
+      <nav class="ms-8 hidden items-center gap-6 lg:flex">
         @for (l of links; track l.label) {
           <a class="nav-link" [routerLink]="l.path" [queryParams]="l.query" routerLinkActive="active"
              [routerLinkActiveOptions]="{ exact: true }">{{ l.label | t }}</a>
@@ -95,9 +95,12 @@
     </div>
     <div class="drawer-section">
       <div class="drawer-title"><fa-icon [icon]="theme.isDark() ? i.moon : i.sun" /> {{ 'pref.theme' | t }}</div>
-      <div class="grid grid-cols-2 gap-2">
-        <button type="button" class="chip" [class.selected]="!theme.isDark()" (click)="theme.mode.set('light')"><fa-icon [icon]="i.sun" /> {{ 'pref.light' | t }}</button>
-        <button type="button" class="chip" [class.selected]="theme.isDark()" (click)="theme.mode.set('dark')"><fa-icon [icon]="i.moon" /> {{ 'pref.dark' | t }}</button>
+      <div class="grid grid-cols-3 gap-2">
+        @for (pref of themePrefs; track pref) {
+          <button type="button" class="chip" [class.selected]="theme.preference() === pref" (click)="theme.set(pref)">
+            <fa-icon [icon]="themeIcons[pref]" /> {{ themeLabels[pref] | t }}
+          </button>
+        }
       </div>
     </div>
   </p-drawer>
@@ -106,7 +109,7 @@
     <router-outlet />
   </main>
 
-  <footer class="footer">
+  <footer class="footer on-dark">
     <div class="container-x grid gap-10 py-14 md:grid-cols-4">
       <div class="md:col-span-2">
         <app-logo [withTagline]="true" />
@@ -120,6 +123,8 @@
       <div>
         <h4 class="footer-title">{{ 'footer.shop' | t }}</h4>
         <ul class="space-y-2 text-sm text-muted">
+          <li><a routerLink="/shop" [queryParams]="{ kind: 'perfume' }" class="hover:text-brand-ink">{{ 'nav.perfumes' | t }}</a></li>
+          <li><a routerLink="/shop" [queryParams]="{ kind: 'cosmetic' }" class="hover:text-brand-ink">{{ 'nav.cosmetics' | t }}</a></li>
           <li><a routerLink="/shop" [queryParams]="{ gender: 'Women' }" class="hover:text-brand-ink">{{ 'nav.women' | t }}</a></li>
           <li><a routerLink="/shop" [queryParams]="{ gender: 'Men' }" class="hover:text-brand-ink">{{ 'nav.men' | t }}</a></li>
           <li><a routerLink="/shop" [queryParams]="{ gender: 'Unisex' }" class="hover:text-brand-ink">{{ 'nav.unisex' | t }}</a></li>

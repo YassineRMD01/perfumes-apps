@@ -1,12 +1,12 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { CouponService } from './coupon.service';
-import { CartItem, Perfume } from './models';
+import { CartItem, Product } from './models';
 import { ProductService } from './product.service';
 import { SettingsService } from './settings.service';
 import { load, persist } from './storage';
 
 export interface CartLine {
-  product: Perfume;
+  product: Product;
   qty: number;
   lineTotal: number;
 }

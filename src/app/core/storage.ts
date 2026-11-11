@@ -33,3 +33,18 @@ export function resetDemoData(): void {
     /* ignore */
   }
 }
+
+/**
+ * Returns true the first time it is called for `id` in this browser (then records it).
+ * Used to add new demo content to data that was saved by an earlier version of the app.
+ */
+export function migrateOnce(id: string): boolean {
+  const done = load<string[]>('migrations', []);
+  if (done.includes(id)) return false;
+  try {
+    localStorage.setItem(PREFIX + 'migrations', JSON.stringify([...done, id]));
+  } catch {
+    /* ignore */
+  }
+  return true;
+}

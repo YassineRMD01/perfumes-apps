@@ -13,23 +13,24 @@ import Aura from '@primeuix/themes/aura';
 import { routes } from './app.routes';
 
 /**
- * Lumora theme: Aura with warm neutral surfaces. The primary palette is replaced at runtime
+ * Lumora theme: Aura with white (light) / black (dark) surfaces and a gold accent. The primary palette is replaced at runtime
  * with the accent color chosen in the admin settings (SettingsService → updatePrimaryPalette).
  */
 const LumoraPreset = definePreset(Aura, {
   semantic: {
     primary: {
-      50: '#fcf4f3', 100: '#f9ebea', 200: '#f1d8d7', 300: '#e7bebc', 400: '#db9e9a', 500: '#cf7d78',
-      600: '#b26a66', 700: '#925754', 800: '#744544', 900: '#5d3836', 950: '#432827',
+      50: '#fbf8f3', 100: '#f6f1e4', 200: '#eee2ca', 300: '#e2d0a6', 400: '#d4b87a', 500: '#c5a04e',
+      600: '#a98944', 700: '#8c703a', 800: '#6e582f', 900: '#584527', 950: '#3e301e',
     },
     formField: { borderRadius: '0.85rem' },
     colorScheme: {
       light: {
-        primary: { color: '{primary.600}', contrastColor: '#ffffff', hoverColor: '{primary.700}', activeColor: '{primary.800}' },
+        // darker gold on white keeps button text readable
+        primary: { color: '{primary.700}', contrastColor: '#ffffff', hoverColor: '{primary.800}', activeColor: '{primary.900}' },
         highlight: { background: '{primary.50}', focusBackground: '{primary.100}', color: '{primary.700}', focusColor: '{primary.800}' },
         surface: {
-          0: '#ffffff', 50: '#fbf8f5', 100: '#f7f1ed', 200: '#ece2dc', 300: '#ddd0c8', 400: '#bfaea5', 500: '#9c8a81',
-          600: '#7a6a62', 700: '#5c4f49', 800: '#3e3431', 900: '#2d2523', 950: '#1a1514',
+          0: '#ffffff', 50: '#fcfbf8', 100: '#f6f4ef', 200: '#e9e5dc', 300: '#d8d3c8', 400: '#b6b0a4', 500: '#8f897e',
+          600: '#69645c', 700: '#4d4943', 800: '#2f2d29', 900: '#141311', 950: '#0a0a09',
         },
       },
       dark: {
@@ -41,8 +42,8 @@ const LumoraPreset = definePreset(Aura, {
           focusColor: 'rgba(255,255,255,.87)',
         },
         surface: {
-          0: '#ffffff', 50: '#f6f1ee', 100: '#ebe3df', 200: '#d6cbc5', 300: '#baaca5', 400: '#86786f', 500: '#6c5e59',
-          600: '#4f4243', 700: '#382d2e', 800: '#251e1f', 900: '#1c1617', 950: '#141011',
+          0: '#ffffff', 50: '#f6f2ea', 100: '#e9e4da', 200: '#d2ccc1', 300: '#b5afa4', 400: '#7d786f', 500: '#5e5a53',
+          600: '#43403b', 700: '#2b2a27', 800: '#1a1a19', 900: '#121212', 950: '#0a0a0a',
         },
       },
     },

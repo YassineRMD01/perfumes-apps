@@ -18,13 +18,13 @@ import { TranslationKey } from '../../core/i18n/en';
 import { I18nService, LANGUAGES } from '../../core/i18n/i18n.service';
 import { I18N_PIPES } from '../../core/i18n/pipes';
 import { CURRENCIES } from '../../core/models';
-import { ThemeService } from '../../core/theme.service';
+import { THEME_PREFERENCES, ThemeService } from '../../core/theme.service';
 import { WishlistService } from '../../core/wishlist.service';
 import { CurrencySwitcher } from '../../shared/currency-switcher/currency-switcher';
 import { Icons } from '../../shared/icons';
 import { LanguageSwitcher } from '../../shared/language-switcher/language-switcher';
 import { Logo } from '../../shared/logo/logo';
-import { ThemeToggle } from '../../shared/theme-toggle/theme-toggle';
+import { THEME_ICONS, THEME_LABELS, ThemeToggle } from '../../shared/theme-toggle/theme-toggle';
 
 @Component({
   selector: 'app-shop-layout',
@@ -50,6 +50,9 @@ export class ShopLayout {
   protected readonly year = new Date().getFullYear();
   protected readonly languages = LANGUAGES;
   protected readonly currencies = CURRENCIES;
+  protected readonly themePrefs = THEME_PREFERENCES;
+  protected readonly themeIcons = THEME_ICONS;
+  protected readonly themeLabels = THEME_LABELS;
   protected readonly socials = [Icons.instagram, Icons.facebook, Icons.pinterest, Icons.tiktok];
 
   protected query = '';
@@ -58,9 +61,10 @@ export class ShopLayout {
   protected readonly links: { label: TranslationKey; path: string; query?: Record<string, string> }[] = [
     { label: 'nav.home', path: '/' },
     { label: 'nav.shopAll', path: '/shop' },
+    { label: 'nav.perfumes', path: '/shop', query: { kind: 'perfume' } },
+    { label: 'nav.cosmetics', path: '/shop', query: { kind: 'cosmetic' } },
     { label: 'nav.women', path: '/shop', query: { gender: 'Women' } },
     { label: 'nav.men', path: '/shop', query: { gender: 'Men' } },
-    { label: 'nav.unisex', path: '/shop', query: { gender: 'Unisex' } },
   ];
 
   protected readonly initials = computed(() =>

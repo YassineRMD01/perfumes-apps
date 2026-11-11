@@ -15,7 +15,7 @@
     @if (hero(); as h) {
       <a [routerLink]="['/product', h.id]" class="hero-visual">
         <div class="hero-arch">
-          <app-bottle class="h-full w-full" [color]="h.color" [name]="h.name" [brand]="h.brandId | brandName" [image]="h.images[0]"
+          <app-bottle class="h-full w-full" [color]="h.color" [name]="h.name" [brand]="h.brandId | brandName" [image]="h.images[0]" [packaging]="h.packaging"
                       [fit]="h.images.length ? 'cover' : 'contain'" />
         </div>
         <div class="hero-caption">
@@ -69,12 +69,40 @@
     <p class="eyebrow">{{ 'home.families' | t }}</p>
     <h2 class="section-title mb-10">{{ 'home.shopByScent' | t }}</h2>
     <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-      @for (c of catalog.categories(); track c.id) {
+      @for (c of catalog.categoriesOf('perfume'); track c.id) {
         <a routerLink="/shop" [queryParams]="{ category: c.id }" class="category-tile" [style.--tile]="c.color">
           <fa-icon [icon]="i.drop" class="category-tile__icon" />
           <div class="font-display mt-8 text-2xl">{{ c.id | categoryName }}</div>
           <div class="text-xs text-muted">{{ c.id | categoryName: 'description' }}</div>
         </a>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Beauty / cosmetics -->
+<section class="beauty py-20">
+  <div class="container-x">
+    <div class="mb-10 grid items-end gap-6 md:grid-cols-[1fr_auto]">
+      <div>
+        <p class="eyebrow">{{ 'home.beautyEyebrow' | t }}</p>
+        <h2 class="section-title">{{ 'home.beautyTitle' | t }}</h2>
+        <p class="mt-2 max-w-lg text-muted">{{ 'home.beautyText' | t }}</p>
+      </div>
+      <p-button routerLink="/shop" [queryParams]="{ kind: 'cosmetic' }" [outlined]="true">{{ 'home.shopCosmetics' | t }} <fa-icon [icon]="i.arrowRight" class="rtl:-scale-x-100" /></p-button>
+    </div>
+    <div class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+      @for (c of catalog.categoriesOf('cosmetic'); track c.id) {
+        <a routerLink="/shop" [queryParams]="{ kind: 'cosmetic', category: c.id }" class="category-tile" [style.--tile]="c.color">
+          <fa-icon [icon]="i.soap" class="category-tile__icon" />
+          <div class="font-display mt-8 text-2xl">{{ c.id | categoryName }}</div>
+          <div class="text-xs text-muted">{{ c.id | categoryName: 'description' }}</div>
+        </a>
+      }
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      @for (p of beauty(); track p.id) {
+        <app-product-card [product]="p" />
       }
     </div>
   </div>

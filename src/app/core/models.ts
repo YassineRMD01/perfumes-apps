@@ -4,6 +4,16 @@ export type Translated = Record<Lang, string>;
 export type Gender = 'Women' | 'Men' | 'Unisex';
 export type Concentration = 'Parfum' | 'EDP' | 'EDT' | 'Cologne';
 
+export type ProductKind = 'perfume' | 'cosmetic';
+export type SkinType = 'All' | 'Dry' | 'Oily' | 'Combination' | 'Sensitive';
+/** Shape drawn when a product has no photo */
+export type Packaging = 'bottle' | 'jar' | 'tube' | 'dropper' | 'lipstick' | 'compact';
+export type SizeUnit = 'ml' | 'g';
+
+export const PRODUCT_KINDS: ProductKind[] = ['perfume', 'cosmetic'];
+export const SKIN_TYPES: SkinType[] = ['All', 'Dry', 'Oily', 'Combination', 'Sensitive'];
+export const PACKAGINGS: Packaging[] = ['bottle', 'jar', 'tube', 'dropper', 'lipstick', 'compact'];
+
 export type Longevity = 'Light' | 'Moderate' | 'Long' | 'VeryLong';
 export type Season = 'Spring' | 'Summer' | 'Autumn' | 'Winter';
 export type TimeOfDay = 'Day' | 'Night' | 'Both';
@@ -16,7 +26,7 @@ export const TIMES_OF_DAY: TimeOfDay[] = ['Day', 'Night', 'Both'];
 export const GENDERS: Gender[] = ['Women', 'Men', 'Unisex'];
 export const CONCENTRATIONS: Concentration[] = ['Parfum', 'EDP', 'EDT', 'Cologne'];
 
-/** Perfume house, managed by the admin. */
+/** Product house, managed by the admin. */
 export interface Brand {
   id: number;
   name: string;
@@ -30,6 +40,8 @@ export interface Brand {
 /** Product category (e.g. olfactory family), managed by the admin, named in every language. */
 export interface Category {
   id: string;
+  /** Perfume categories (olfactory families) or cosmetic categories (skincare, makeup…) */
+  kind: ProductKind;
   name: Translated;
   description: Translated;
   /** Accent color used for the category tile. */
@@ -37,8 +49,9 @@ export interface Category {
   createdAt: string;
 }
 
-export interface Perfume {
+export interface Product {
   id: number;
+  kind: ProductKind;
   name: string;
   brandId: number;
   categoryId: string;
@@ -47,19 +60,28 @@ export interface Perfume {
   price: number;
   oldPrice?: number | null;
   stock: number;
+  /** Size, in `unit` (ml or g) */
   volumeMl: number;
+  unit: SizeUnit;
   gender: Gender;
   concentration: Concentration;
   topNotes: string[];
   heartNotes: string[];
   baseNotes: string[];
+  // ---- Perfume details (ignored for cosmetics) ----
   /** How long the scent lasts on skin */
   longevity: Longevity;
   /** Seasons it is best worn in */
   seasons: Season[];
   /** Best for day, night or both */
   timeOfDay: TimeOfDay;
-  /** Bottle tint used by the generated SVG bottle when there is no photo */
+  // ---- Cosmetic details (ignored for perfumes) ----
+  /** Suitable skin types; empty = not applicable (e.g. hair care) */
+  skinTypes: SkinType[];
+  ingredients: string[];
+  howToUse: string;
+  packaging: Packaging;
+  /** Tint used by the generated SVG packaging when there is no photo */
   color: string;
   /** Up to MAX_PHOTOS references (URL or "idb:<id>"), the first one is the cover. */
   images: string[];
@@ -69,7 +91,7 @@ export interface Perfume {
   createdAt: string;
 }
 
-export type PerfumeInput = Omit<Perfume, 'id' | 'createdAt' | 'rating' | 'reviews'>;
+export type ProductInput = Omit<Product, 'id' | 'createdAt' | 'rating' | 'reviews'>;
 
 export type Role = 'admin' | 'client';
 
@@ -193,6 +215,7 @@ export interface StoreSettings {
 }
 
 export const ACCENT_PRESETS = [
+  { key: 'gold', color: '#c5a04e' },
   { key: 'rose', color: '#cf7d78' },
   { key: 'lilac', color: '#9b7fc8' },
   { key: 'sage', color: '#6f9a7d' },
@@ -204,7 +227,7 @@ export const ACCENT_PRESETS = [
 export const DEFAULT_SETTINGS: StoreSettings = {
   storeName: 'Lumora',
   logo: null,
-  accent: '#cf7d78',
+  accent: '#c5a04e',
   defaultCurrency: 'USD',
   rates: { USD: 1, EUR: 0.92, MAD: 9.95, AED: 3.67 },
   freeShippingThreshold: 150,

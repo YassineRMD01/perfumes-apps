@@ -70,7 +70,7 @@ export class ProductDetail {
     if (!p) return [];
     return this.products
       .products()
-      .filter((x) => x.id !== p.id && (x.categoryId === p.categoryId || x.brandId === p.brandId))
+      .filter((x) => x.id !== p.id && x.kind === p.kind && (x.categoryId === p.categoryId || x.brandId === p.brandId))
       .slice(0, 4);
   });
 

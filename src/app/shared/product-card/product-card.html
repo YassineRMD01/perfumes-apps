@@ -19,7 +19,7 @@
       }
     } @else {
       <div class="media__bottle" [style.--tint]="p.color">
-        <app-bottle class="h-full transition duration-500 group-hover:scale-105" [color]="p.color" [name]="p.name" [brand]="p.brandId | brandName" />
+        <app-bottle class="h-full transition duration-500 group-hover:scale-105" [color]="p.color" [name]="p.name" [brand]="p.brandId | brandName" [packaging]="p.packaging" />
       </div>
     }
   </a>
@@ -30,11 +30,18 @@
     <div class="meta">
       <span>{{ p.categoryId | categoryName }}</span>
       <span aria-hidden="true">·</span>
-      <span>{{ p.volumeMl }} ml</span>
+      <span>{{ p.volumeMl }} {{ p.unit }}</span>
       <span aria-hidden="true">·</span>
       <span class="inline-flex items-center gap-1"><fa-icon [icon]="i.star" class="text-brand-500" />{{ rating().average.toFixed(1) }}</span>
     </div>
-    <app-wear-guide class="mt-2" [perfume]="p" [compact]="true" />
+    @if (p.kind === 'perfume') {
+      <app-wear-guide class="mt-2" [perfume]="p" [compact]="true" />
+    } @else {
+      <div class="mt-2 flex flex-wrap gap-1.5">
+        <span class="pill"><fa-icon [icon]="i.soap" /> {{ 'cosmetic' | tv: 'kind' }}</span>
+        @for (s of p.skinTypes.slice(0, 2); track s) { <span class="pill">{{ s | tv: 'skin' }}</span> }
+      </div>
+    }
     <div class="footer">
       <div>
         <span class="price">{{ p.price | money }}</span>

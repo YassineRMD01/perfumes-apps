@@ -11,41 +11,43 @@
   --font-sans: 'Jost', ui-sans-serif, system-ui, sans-serif;
   --font-arabic: 'Cairo', ui-sans-serif, system-ui, sans-serif;
 
-  /* default accent: Rose */
-  --color-brand-50: #fcf4f3;
-  --color-brand-100: #f9ebea;
-  --color-brand-200: #f1d8d7;
-  --color-brand-300: #e7bebc;
-  --color-brand-400: #db9e9a;
-  --color-brand-500: #cf7d78;
-  --color-brand-600: #b26a66;
-  --color-brand-700: #925754;
-  --color-brand-800: #744544;
-  --color-brand-900: #5d3836;
-  --color-brand-950: #432827;
+  /* default accent: Gold */
+  --color-brand-50: #fbf8f3;
+  --color-brand-100: #f6f1e4;
+  --color-brand-200: #eee2ca;
+  --color-brand-300: #e2d0a6;
+  --color-brand-400: #d4b87a;
+  --color-brand-500: #c5a04e;
+  --color-brand-600: #a98944;
+  --color-brand-700: #8c703a;
+  --color-brand-800: #6e582f;
+  --color-brand-900: #584527;
+  --color-brand-950: #3e301e;
 
-  --color-page: #fbf8f5;
+  /* Light: white with a whisper of warmth */
+  --color-page: #fcfbf8;
   --color-surface: #ffffff;
-  --color-surface-2: #f7f1ed;
-  --color-surface-3: #efe7e2;
-  --color-line: #ece2dc;
-  --color-ink: #2d2523;
-  --color-muted: #776860;
-  --color-faint: #a99b93;
+  --color-surface-2: #f6f4ef;
+  --color-surface-3: #eeebe3;
+  --color-line: #e9e5dc;
+  --color-ink: #141311;
+  --color-muted: #69645c;
+  --color-faint: #a29c91;
   /* tinted background + readable accent text, derived from the accent */
-  --color-brand-soft: color-mix(in srgb, var(--color-brand-500) 13%, var(--color-surface));
+  --color-brand-soft: color-mix(in srgb, var(--color-brand-500) 14%, var(--color-surface));
   --color-brand-ink: var(--color-brand-700);
 }
 
 .app-dark {
-  --color-page: #141011;
-  --color-surface: #1c1617;
-  --color-surface-2: #251e1f;
-  --color-surface-3: #2f2627;
-  --color-line: #382d2e;
-  --color-ink: #f4ede9;
-  --color-muted: #baaca5;
-  --color-faint: #86786f;
+  /* Dark: deep black */
+  --color-page: #0a0a0a;
+  --color-surface: #121212;
+  --color-surface-2: #1a1a19;
+  --color-surface-3: #232321;
+  --color-line: #2b2a27;
+  --color-ink: #f6f2ea;
+  --color-muted: #b5afa4;
+  --color-faint: #7d786f;
   --color-brand-soft: color-mix(in srgb, var(--color-brand-500) 18%, var(--color-surface));
   --color-brand-ink: var(--color-brand-300);
 }
@@ -75,8 +77,8 @@
     letter-spacing: 0;
   }
   ::selection {
-    background: var(--color-brand-200);
-    color: var(--color-brand-900);
+    background: var(--color-brand-300);
+    color: #141311;
   }
 }
 
@@ -85,7 +87,7 @@
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
   .card {
-    @apply rounded-3xl border border-line bg-surface shadow-[0_1px_2px_rgb(45_37_35/0.04),0_8px_24px_-12px_rgb(45_37_35/0.08)];
+    @apply rounded-3xl border border-line bg-surface shadow-[0_1px_2px_rgb(20_19_17/0.04),0_8px_24px_-12px_rgb(20_19_17/0.08)];
   }
   .eyebrow {
     @apply text-xs font-medium uppercase tracking-[0.22em] text-brand-ink;
@@ -119,8 +121,29 @@
   }
   .soft-glow {
     background:
-      radial-gradient(60% 60% at 80% 20%, color-mix(in srgb, var(--color-brand-300) 45%, transparent), transparent 70%),
-      radial-gradient(50% 60% at 10% 90%, color-mix(in srgb, #c8b6e2 35%, transparent), transparent 70%),
+      radial-gradient(60% 60% at 82% 18%, color-mix(in srgb, var(--color-brand-300) 38%, transparent), transparent 70%),
+      radial-gradient(50% 60% at 8% 92%, color-mix(in srgb, var(--color-brand-200) 30%, transparent), transparent 70%),
       var(--color-page);
+  }
+  .app-dark .soft-glow {
+    background:
+      radial-gradient(60% 60% at 82% 18%, color-mix(in srgb, var(--color-brand-500) 22%, transparent), transparent 70%),
+      radial-gradient(50% 60% at 8% 92%, color-mix(in srgb, var(--color-brand-700) 18%, transparent), transparent 70%),
+      var(--color-page);
+  }
+  /* Always-dark band (announcement bar, footer): re-maps the tokens locally to the dark palette */
+  .on-dark {
+    --color-page: #0a0a0a;
+    --color-surface: #141414;
+    --color-surface-2: #1b1b1a;
+    --color-surface-3: #242422;
+    --color-line: #2b2a27;
+    --color-ink: #f6f2ea;
+    --color-muted: #b5afa4;
+    --color-faint: #7d786f;
+    --color-brand-ink: var(--color-brand-300);
+    --color-brand-soft: color-mix(in srgb, var(--color-brand-500) 18%, #141414);
+    background-color: var(--color-page);
+    color: var(--color-ink);
   }
 }

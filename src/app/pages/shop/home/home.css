@@ -50,7 +50,7 @@
     radial-gradient(60% 50% at 50% 60%, color-mix(in srgb, var(--color-brand-300) 50%, transparent), transparent 75%),
     var(--color-surface);
   padding: 2.5rem 2rem 2rem;
-  box-shadow: 0 40px 60px -40px rgb(45 37 35 / 0.35);
+  box-shadow: 0 40px 60px -40px rgb(20 19 17 / 0.35);
 }
 
 .hero-caption {
@@ -64,7 +64,7 @@
   border: 1px solid var(--color-line);
   background: var(--color-surface);
   padding: 0.9rem 1.2rem;
-  box-shadow: 0 16px 30px -18px rgb(45 37 35 / 0.3);
+  box-shadow: 0 16px 30px -18px rgb(20 19 17 / 0.3);
 }
 
 .perk-icon {
@@ -95,7 +95,7 @@
 
 .category-tile:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 30px -20px rgb(45 37 35 / 0.3);
+  box-shadow: 0 20px 30px -20px rgb(20 19 17 / 0.3);
 }
 
 .category-tile__icon {
@@ -152,4 +152,14 @@
 
 .newsletter-input:focus {
   border-color: var(--color-brand-400);
+}
+
+/* Cosmetics band: soft gold wash in light mode, deep black in dark mode */
+.beauty {
+  border-block: 1px solid var(--color-line);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-brand-100) 55%, var(--color-page)), var(--color-page));
+}
+
+:host-context(.app-dark) .beauty {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-brand-900) 30%, var(--color-page)), var(--color-page));
 }

@@ -14,10 +14,17 @@
            [globalFilterFields]="['name', 'brandName', 'categoryName']" [tableStyle]="{ 'min-width': '60rem' }"
            sortField="createdAt" [sortOrder]="-1" [rowHover]="true">
     <ng-template #caption>
-      <p-iconfield>
-        <p-inputicon><fa-icon [icon]="i.search" class="text-faint" /></p-inputicon>
-        <input pInputText [placeholder]="'ap.search' | t" (input)="filter(dt, $event)" />
-      </p-iconfield>
+      <div class="flex flex-wrap items-center gap-3">
+        <p-iconfield>
+          <p-inputicon><fa-icon [icon]="i.search" class="text-faint" /></p-inputicon>
+          <input pInputText [placeholder]="'ap.search' | t" (input)="filter(dt, $event)" />
+        </p-iconfield>
+        <div class="flex gap-1.5">
+          <button type="button" class="chip" [class.selected]="!tableKind()" (click)="tableKind.set(null)">{{ 'shop.all' | t }}</button>
+          <button type="button" class="chip" [class.selected]="tableKind() === 'perfume'" (click)="tableKind.set('perfume')"><fa-icon [icon]="i.perfume" /> {{ 'nav.perfumes' | t }}</button>
+          <button type="button" class="chip" [class.selected]="tableKind() === 'cosmetic'" (click)="tableKind.set('cosmetic')"><fa-icon [icon]="i.soap" /> {{ 'nav.cosmetics' | t }}</button>
+        </div>
+      </div>
     </ng-template>
     <ng-template #header>
       <tr>
@@ -36,7 +43,7 @@
       <tr>
         <td>
           <div class="relative h-14 w-12 overflow-hidden rounded-lg bg-surface-2" [class.p-1]="!p.images.length">
-            <app-bottle class="h-full w-full" [color]="p.color" [name]="p.name" [image]="p.images[0]" fit="cover" />
+            <app-bottle class="h-full w-full" [color]="p.color" [name]="p.name" [image]="p.images[0]" [packaging]="p.packaging" fit="cover" />
             @if (p.images.length > 1) {
               <span class="absolute bottom-0.5 end-0.5 rounded bg-black/65 px-1 text-[9px] font-semibold text-white"
                     [pTooltip]="'ap.photosCount' | t: { n: p.images.length }">{{ p.images.length }}</span>
@@ -45,7 +52,10 @@
         </td>
         <td>
           <div class="font-medium">{{ p.name }}</div>
-          <div class="text-xs text-muted">{{ p.brandId | brandName }} · {{ p.concentration }} {{ p.volumeMl }}ml</div>
+          <div class="text-xs text-muted">
+            <fa-icon [icon]="p.kind === 'perfume' ? i.perfume : i.soap" class="me-1 text-brand-ink" [title]="p.kind | tv: 'kind'" />
+            {{ p.brandId | brandName }} · @if (p.kind === 'perfume') { {{ p.concentration }} } {{ p.volumeMl }} {{ p.unit }}
+          </div>
         </td>
         <td>{{ p.categoryId | categoryName }}</td>
         <td>{{ p.gender | tv: 'gender' }}</td>
@@ -57,7 +67,10 @@
           <p-tag [value]="p.stock === 0 ? ('ap.outOfStock' | t) : ('ap.units' | t: { n: p.stock })"
                  [severity]="p.stock === 0 ? 'danger' : p.stock <= 5 ? 'warn' : 'success'" />
         </td>
-        <td class="min-w-48"><app-wear-guide [perfume]="p" [compact]="true" /></td>
+        <td class="min-w-48">
+          @if (p.kind === 'perfume') { <app-wear-guide [perfume]="p" [compact]="true" /> }
+          @else { <span class="text-xs text-muted">{{ p.packaging | tv: 'pack' }}@for (s of p.skinTypes; track s) { · {{ s | tv: 'skin' }} }</span> }
+        </td>
         <td>@if (p.featured) { <fa-icon [icon]="i.star" class="text-brand-500" /> } @else { <span class="text-faint">—</span> }</td>
         <td class="whitespace-nowrap text-end">
           <p-button [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'ap.edit' | t" [ariaLabel]="'ap.edit' | t" (onClick)="openEdit(p)"><fa-icon [icon]="i.edit" /></p-button>
@@ -76,11 +89,11 @@
   <form [formGroup]="form" (ngSubmit)="save()" id="productForm" class="grid gap-6 md:grid-cols-[200px_1fr]">
     <div class="flex flex-col gap-3">
       <div class="flex h-56 w-full items-center justify-center overflow-hidden rounded-xl bg-surface-2" [class.p-4]="!images().length">
-        <app-bottle class="h-full w-full" [color]="form.controls.color.value" [name]="form.controls.name.value || ('ap.name' | t)"
+        <app-bottle class="h-full w-full" [color]="form.controls.color.value" [packaging]="form.controls.kind.value === 'perfume' ? 'bottle' : form.controls.packaging.value" [name]="form.controls.name.value || ('ap.name' | t)"
                     [brand]="form.controls.brandId.value ? (form.controls.brandId.value | brandName) : ''" [image]="images()[0]" fit="cover" />
       </div>
       <label class="flex w-full items-center justify-between gap-2 text-sm">
-        {{ 'ap.bottleColor' | t }}
+        {{ 'ap.tintColor' | t }}
         <input type="color" formControlName="color" class="h-8 w-12 cursor-pointer rounded border border-line" />
       </label>
       <p class="-mt-2 text-xs text-faint">{{ 'ap.bottleHint' | t }}</p>
@@ -88,6 +101,10 @@
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2">
+      <div class="sm:col-span-2">
+        <label class="field-label">{{ 'ap.kind' | t }}</label>
+        <p-selectbutton [options]="kindOptions()" optionLabel="label" optionValue="value" formControlName="kind" [allowEmpty]="false" />
+      </div>
       <div class="sm:col-span-2">
         <app-photo-manager [(images)]="images" (uploaded)="uploadedThisSession.push($event)" />
       </div>
@@ -101,9 +118,17 @@
       <div><label class="field-label">{{ 'ap.price' | t }} (USD) *</label><p-inputnumber formControlName="price" mode="currency" currency="USD" [locale]="i18n.locale()" [fluid]="true" [invalid]="bad('price')" /></div>
       <div><label class="field-label">{{ 'ap.oldPrice' | t }} (USD)</label><p-inputnumber formControlName="oldPrice" mode="currency" currency="USD" [locale]="i18n.locale()" [fluid]="true" /></div>
       <div><label class="field-label">{{ 'ap.stock' | t }} *</label><p-inputnumber formControlName="stock" [min]="0" [showButtons]="true" [fluid]="true" /></div>
-      <div><label class="field-label">{{ 'ap.volume' | t }} *</label><p-inputnumber formControlName="volumeMl" [min]="1" suffix=" ml" [fluid]="true" /></div>
+      <div>
+        <label class="field-label">{{ 'cos.size' | t }} *</label>
+        <div class="flex gap-2">
+          <p-inputnumber formControlName="volumeMl" [min]="0.1" [maxFractionDigits]="1" [fluid]="true" class="flex-1" />
+          <p-selectbutton [options]="unitOptions" formControlName="unit" [allowEmpty]="false" [ariaLabel]="'ap.unit' | t" />
+        </div>
+      </div>
       <div><label class="field-label">{{ 'ap.gender' | t }}</label><p-select [options]="genderOptions()" optionLabel="label" optionValue="value" formControlName="gender" class="w-full" appendTo="body" /></div>
       <div><label class="field-label">{{ 'ap.family' | t }} *</label><p-select [options]="categoryOptions()" optionLabel="label" optionValue="value" formControlName="categoryId" [placeholder]="'ap.selectCategory' | t" class="w-full" appendTo="body" [invalid]="bad('categoryId')" /></div>
+      @if (form.controls.kind.value === 'perfume') {
+      <div class="sm:col-span-2 text-xs font-medium uppercase tracking-[0.18em] text-brand-ink">{{ 'ap.perfumeDetails' | t }}</div>
       <div class="sm:col-span-2"><label class="field-label">{{ 'ap.concentration' | t }}</label><p-select [options]="concentrationOptions()" optionLabel="label" optionValue="value" formControlName="concentration" class="w-full" appendTo="body" /></div>
       <div class="sm:col-span-2 grid gap-4 rounded-2xl border border-line bg-surface-2 p-4 sm:grid-cols-2">
         <div class="sm:col-span-2 text-xs font-medium uppercase tracking-[0.18em] text-brand-ink">{{ 'pd.wearGuide' | t }}</div>
@@ -129,6 +154,22 @@
         <div><label class="field-label">{{ 'ap.heartNotes' | t }}</label><input pInputText formControlName="heartNotes" class="w-full" [placeholder]="'ap.notesHint' | t" /></div>
         <div><label class="field-label">{{ 'ap.baseNotes' | t }}</label><input pInputText formControlName="baseNotes" class="w-full" [placeholder]="'ap.notesHint' | t" /></div>
       </div>
+      } @else {
+      <div class="sm:col-span-2 grid gap-4 rounded-2xl border border-line bg-surface-2 p-4 sm:grid-cols-2">
+        <div class="sm:col-span-2 text-xs font-medium uppercase tracking-[0.18em] text-brand-ink">{{ 'ap.cosmeticDetails' | t }}</div>
+        <div><label class="field-label">{{ 'ap.packaging' | t }}</label><p-select [options]="packagingOptions()" optionLabel="label" optionValue="value" formControlName="packaging" class="w-full" appendTo="body" /></div>
+        <div>
+          <label class="field-label">{{ 'cos.skinType' | t }}</label>
+          <div class="flex flex-wrap gap-1.5">
+            @for (s of skinList; track s) {
+              <button type="button" class="chip !py-0.5 !text-xs" [class.selected]="form.controls.skinTypes.value.includes(s)" (click)="toggleSkin(s)">{{ s | tv: 'skin' }}</button>
+            }
+          </div>
+        </div>
+        <div class="sm:col-span-2"><label class="field-label">{{ 'cos.ingredients' | t }}</label><input pInputText formControlName="ingredients" class="w-full" [placeholder]="'ap.notesHint' | t" /></div>
+        <div class="sm:col-span-2"><label class="field-label">{{ 'cos.howToUse' | t }}</label><textarea pTextarea formControlName="howToUse" rows="2" class="w-full"></textarea></div>
+      </div>
+      }
     </div>
   </form>
   <ng-template #footer>

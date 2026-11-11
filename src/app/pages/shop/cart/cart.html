@@ -15,7 +15,7 @@
           <div class="flex gap-4 p-4 sm:p-5">
             <a [routerLink]="['/product', line.product.id]" class="flex h-28 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface-2"
                [class.p-2]="!line.product.images.length">
-              <app-bottle class="h-full w-full" [color]="line.product.color" [name]="line.product.name" [brand]="line.product.brandId | brandName"
+              <app-bottle class="h-full w-full" [color]="line.product.color" [name]="line.product.name" [brand]="line.product.brandId | brandName" [packaging]="line.product.packaging"
                           [image]="line.product.images[0]" fit="cover" />
             </a>
             <div class="flex flex-1 flex-col">

@@ -17,7 +17,7 @@
 
 .product-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 24px 40px -24px rgb(45 37 35 / 0.25);
+  box-shadow: 0 24px 40px -24px rgb(20 19 17 / 0.28);
 }
 
 .wish {
@@ -133,4 +133,19 @@
   font-size: 0.85rem;
   color: var(--color-faint);
   text-decoration: line-through;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 9999px;
+  background: var(--color-surface-2);
+  padding: 0.15rem 0.55rem;
+  font-size: 0.7rem;
+  color: var(--color-muted);
+}
+
+.pill fa-icon {
+  color: var(--color-brand-ink);
 }

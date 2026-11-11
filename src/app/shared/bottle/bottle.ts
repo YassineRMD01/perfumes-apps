@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { ImageStore } from '../../core/image-store.service';
+import { Packaging } from '../../core/models';
 
 let uid = 0;
 
@@ -22,6 +23,8 @@ export class Bottle {
   /** Photo reference (URL or "idb:" id). */
   readonly image = input<string | null | undefined>(null);
   readonly fit = input<'contain' | 'cover'>('contain');
+  /** Shape drawn when there is no photo */
+  readonly packaging = input<Packaging>('bottle');
 
   protected readonly src = computed(() => this.images.resolve(this.image()));
   protected readonly gid = `bottle-${++uid}`;

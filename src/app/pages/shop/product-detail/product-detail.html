@@ -2,8 +2,8 @@
   <div class="container-x py-8">
     <nav class="mb-6 text-sm text-muted">
       <a routerLink="/" class="hover:text-brand-ink">{{ 'nav.home' | t }}</a> /
-      <a routerLink="/shop" class="hover:text-brand-ink">{{ 'nav.shopAll' | t }}</a> /
-      <a routerLink="/shop" [queryParams]="{ category: p.categoryId }" class="hover:text-brand-ink">{{ p.categoryId | categoryName }}</a> /
+      <a routerLink="/shop" [queryParams]="{ kind: p.kind }" class="hover:text-brand-ink">{{ (p.kind === 'perfume' ? 'nav.perfumes' : 'nav.cosmetics') | t }}</a> /
+      <a routerLink="/shop" [queryParams]="{ kind: p.kind, category: p.categoryId }" class="hover:text-brand-ink">{{ p.categoryId | categoryName }}</a> /
       <span class="text-ink">{{ p.name }}</span>
     </nav>
 
@@ -29,7 +29,7 @@
             }
           } @else {
             <div class="absolute inset-20 rounded-full blur-3xl" [style.background]="p.color + '55'"></div>
-            <app-bottle class="relative h-full p-10" [color]="p.color" [name]="p.name" [brand]="p.brandId | brandName" />
+            <app-bottle class="relative h-full p-10" [color]="p.color" [name]="p.name" [brand]="p.brandId | brandName" [packaging]="p.packaging" />
           }
         </div>
         @if (photos().length > 1) {
@@ -65,12 +65,13 @@
         <div class="mt-4 flex flex-wrap gap-2">
           <p-tag [value]="p.gender | tv: 'gender'" severity="secondary" />
           <p-tag [value]="p.categoryId | categoryName" severity="secondary" />
-          <p-tag [value]="p.concentration | tv: 'conc'" severity="secondary" />
-          <p-tag [value]="p.volumeMl + ' ml'" severity="secondary" />
+          @if (p.kind === 'perfume') { <p-tag [value]="p.concentration | tv: 'conc'" severity="secondary" /> }
+          <p-tag [value]="p.volumeMl + ' ' + p.unit" severity="secondary" />
         </div>
 
         <p class="mt-6 leading-relaxed text-muted">{{ p.description }}</p>
 
+        @if (p.kind === 'perfume') {
         <h3 class="mb-3 mt-8 text-2xl">{{ 'pd.wearGuide' | t }}</h3>
         <app-wear-guide [perfume]="p" />
 
@@ -83,6 +84,35 @@
             </div>
           }
         </div>
+        } @else {
+          <h3 class="mb-3 mt-8 text-2xl">{{ 'cos.details' | t }}</h3>
+          <div class="cos-panel">
+            @if (p.skinTypes.length) {
+              <div class="cos-row">
+                <div class="cos-label">{{ 'cos.skinType' | t }}</div>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (s of p.skinTypes; track s) { <span class="cos-chip">{{ s | tv: 'skin' }}</span> }
+                </div>
+              </div>
+            }
+            @if (p.ingredients.length) {
+              <div class="cos-row">
+                <div class="cos-label">{{ 'cos.ingredients' | t }}</div>
+                <div class="text-sm">{{ p.ingredients.join(' · ') }}</div>
+              </div>
+            }
+            <div class="cos-row">
+              <div class="cos-label">{{ 'cos.size' | t }}</div>
+              <div class="text-sm">{{ p.volumeMl }} {{ p.unit }}</div>
+            </div>
+            @if (p.howToUse) {
+              <div class="cos-row">
+                <div class="cos-label">{{ 'cos.howToUse' | t }}</div>
+                <div class="text-sm leading-relaxed text-muted">{{ p.howToUse }}</div>
+              </div>
+            }
+          </div>
+        }
 
         <p-divider />
 

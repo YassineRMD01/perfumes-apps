@@ -8,7 +8,7 @@ import { MessageModule } from 'primeng/message';
 import { TagModule } from 'primeng/tag';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { I18N_PIPES } from '../../../core/i18n/pipes';
-import { Order, STATUS_SEVERITY } from '../../../core/models';
+import { Order, STATUS_SEVERITY, Packaging } from '../../../core/models';
 import { OrderService } from '../../../core/order.service';
 import { ProductService } from '../../../core/product.service';
 import { Bottle } from '../../../shared/bottle/bottle';
@@ -30,6 +30,10 @@ export class MyOrders {
   private readonly i18n = inject(I18nService);
   protected readonly i = Icons;
   protected readonly sev = STATUS_SEVERITY;
+
+  protected pack(productId: number): Packaging {
+    return this.products.getById(productId)?.packaging ?? 'bottle';
+  }
 
   protected photo(productId: number): string | undefined {
     return this.products.getById(productId)?.images[0];

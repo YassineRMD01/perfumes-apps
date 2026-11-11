@@ -7,7 +7,7 @@ import { AuthService } from '../../../core/auth.service';
 import { CurrencyService } from '../../../core/currency.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { I18N_PIPES } from '../../../core/i18n/pipes';
-import { ORDER_STATUSES, severityOf, STATUS_SEVERITY } from '../../../core/models';
+import { ORDER_STATUSES, Packaging, severityOf, STATUS_SEVERITY } from '../../../core/models';
 import { OrderService } from '../../../core/order.service';
 import { ProductService } from '../../../core/product.service';
 import { Bottle } from '../../../shared/bottle/bottle';
@@ -73,11 +73,12 @@ export class Dashboard {
   protected readonly recent = computed(() => this.orders.orders().slice(0, 6));
 
   protected readonly topSellers = computed(() => {
-    const map = new Map<number, { id: number; name: string; color: string; image?: string; qty: number; revenue: number }>();
+    const map = new Map<number, { id: number; name: string; color: string; image?: string; packaging: Packaging; qty: number; revenue: number }>();
     for (const o of this.active())
       for (const it of o.items) {
         const e = map.get(it.productId) ?? {
-          id: it.productId, name: it.name, color: it.color, image: this.products.getById(it.productId)?.images[0], qty: 0, revenue: 0,
+          id: it.productId, name: it.name, color: it.color, image: this.products.getById(it.productId)?.images[0],
+          packaging: this.products.getById(it.productId)?.packaging ?? 'bottle', qty: 0, revenue: 0,
         };
         e.qty += it.qty;
         e.revenue += it.qty * it.price;
